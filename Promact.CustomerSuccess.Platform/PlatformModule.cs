@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -7,7 +7,6 @@ using Promact.CustomerSuccess.Platform.Data;
 using Promact.CustomerSuccess.Platform.Localization;
 using OpenIddict.Validation.AspNetCore;
 using Volo.Abp;
-using Volo.Abp.Uow;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
@@ -48,6 +47,14 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
+using Promact.CustomerSuccess.Platform.Services.Emailing;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
+using Volo.Abp.Data;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -98,7 +105,8 @@ namespace Promact.CustomerSuccess.Platform;
     typeof(AbpSettingManagementEntityFrameworkCoreModule),
     typeof(AbpSettingManagementHttpApiModule)
 )]
-public class PlatformModule : AbpModule
+[DependsOn(typeof(AbpEmailingModule))]
+    public class PlatformModule : AbpModule
 {
     /* Single point to enable/disable multi-tenancy */
     private const bool IsMultiTenant = true;
@@ -107,12 +115,20 @@ public class PlatformModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
-
+        context.Services.AddScoped<IEmailService, EmailService>();
         context.Services.PreConfigure<AbpMvcDataAnnotationsLocalizationOptions>(options =>
         {
             options.AddAssemblyResource(
                 typeof(PlatformResource)
             );
+        });
+
+        context.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowOrigin",
+                builder => builder.AllowAnyOrigin()
+                                  .AllowAnyMethod()
+                                  .AllowAnyHeader());
         });
 
         PreConfigure<OpenIddictBuilder>(builder =>
@@ -134,7 +150,11 @@ public class PlatformModule : AbpModule
 
             PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
             {
-                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "a2a5a8af-14c6-4374-a8f3-908165814c47");
+                //serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", "a2a5a8af-14c6-4374-a8f3-908165814c47");
+                serverBuilder.AddEncryptionCertificate(
+                    GetEncryptionCertificate(hostingEnvironment, context.Services.GetConfiguration()));
+                serverBuilder.AddSigningCertificate(
+                        GetSigningCertificate(hostingEnvironment, context.Services.GetConfiguration()));
             });
         }
     }
@@ -143,11 +163,28 @@ public class PlatformModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
+      
 
         if (hostingEnvironment.IsDevelopment())
         {
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
+
         }
+
+        context.Services.AddAuthentication()
+          .AddJwtBearer(options =>
+          {
+              options.TokenValidationParameters = new TokenValidationParameters
+              {
+                  ValidateIssuer = true,
+                  ValidateAudience = true,
+                  ValidateLifetime = true,
+                  ValidateIssuerSigningKey = true,
+                  ValidIssuer = configuration["Jwt:Issuer"], 
+                  ValidAudience = configuration["Jwt:Audience"],
+                  IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])) 
+              };
+          });
 
         ConfigureAuthentication(context);
         ConfigureBundles();
@@ -170,6 +207,67 @@ public class PlatformModule : AbpModule
         {
             options.IsDynamicClaimsEnabled = true;
         });
+    }
+
+
+    private X509Certificate2 GetSigningCertificate(IWebHostEnvironment hostingEnv,
+                            IConfiguration configuration)
+    {
+        var fileName = $"cert-signing.pfx";
+        var passPhrase = configuration["MyAppCertificate:X590:PassPhrase"];
+        var file = Path.Combine(hostingEnv.ContentRootPath, fileName);
+        if (File.Exists(file))
+        {
+            var created = File.GetCreationTime(file);
+            var days = (DateTime.Now - created).TotalDays;
+            if (days > 180)
+                File.Delete(file);
+            else
+                return new X509Certificate2(file, passPhrase,
+                             X509KeyStorageFlags.MachineKeySet);
+        }
+        // file doesn't exist or was deleted because it expired
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
+        var subject = new X500DistinguishedName("CN=Fabrikam Signing Certificate");
+        var request = new CertificateRequest(subject, algorithm,
+                            HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        request.CertificateExtensions.Add(new X509KeyUsageExtension(
+                            X509KeyUsageFlags.DigitalSignature, critical: true));
+        var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow,
+                            DateTimeOffset.UtcNow.AddYears(2));
+        File.WriteAllBytes(file, certificate.Export(X509ContentType.Pfx, string.Empty));
+        return new X509Certificate2(file, passPhrase,
+                            X509KeyStorageFlags.MachineKeySet);
+    }
+
+    private X509Certificate2 GetEncryptionCertificate(IWebHostEnvironment hostingEnv,
+                                 IConfiguration configuration)
+    {
+        var fileName = $"cert-encryption.pfx";
+        var passPhrase = configuration["MyAppCertificate:X590:PassPhrase"];
+        var file = Path.Combine(hostingEnv.ContentRootPath, fileName);
+        if (File.Exists(file))
+        {
+            var created = File.GetCreationTime(file);
+            var days = (DateTime.Now - created).TotalDays;
+            if (days > 180)
+                File.Delete(file);
+            else
+                return new X509Certificate2(file, passPhrase,
+                                X509KeyStorageFlags.MachineKeySet);
+        }
+
+        // file doesn't exist or was deleted because it expired
+        using var algorithm = RSA.Create(keySizeInBits: 2048);
+        var subject = new X500DistinguishedName("CN=Fabrikam Encryption Certificate");
+        var request = new CertificateRequest(subject, algorithm,
+                            HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        request.CertificateExtensions.Add(new X509KeyUsageExtension(
+                            X509KeyUsageFlags.KeyEncipherment, critical: true));
+        var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow,
+                            DateTimeOffset.UtcNow.AddYears(2));
+        File.WriteAllBytes(file, certificate.Export(X509ContentType.Pfx, string.Empty));
+        return new X509Certificate2(file, passPhrase, X509KeyStorageFlags.MachineKeySet);
     }
 
     private void ConfigureBundles()
@@ -279,6 +377,7 @@ public class PlatformModule : AbpModule
             });
     }
 
+
     private void ConfigureAutoMapper(ServiceConfigurationContext context)
     {
         context.Services.AddAutoMapperObjectMapper<PlatformModule>();
@@ -296,6 +395,7 @@ public class PlatformModule : AbpModule
     {
         context.Services.AddCors(options =>
         {
+
             options.AddDefaultPolicy(builder =>
             {
                 builder
@@ -338,7 +438,12 @@ public class PlatformModule : AbpModule
             });
         });
 
+        context.Services.AddTransient<IDataSeedContributor, CustomerSuccessDataSeedContributor>();
+
     }
+
+
+
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
@@ -348,6 +453,7 @@ public class PlatformModule : AbpModule
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+            app.UseCors("AllowOrigin");
         }
 
         app.UseAbpRequestLocalization();
@@ -355,8 +461,22 @@ public class PlatformModule : AbpModule
         if (!env.IsDevelopment())
         {
             app.UseErrorPage();
-        }
+            try
+            {
+                using (var scope = app.ApplicationServices.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<PlatformDbContext>();
+                    db.Database.Migrate();
+                    Log.Information("Mirgated Successfully");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+            }
 
+        }
+        
         app.UseCorrelationId();
         app.UseStaticFiles();
         app.UseRouting();
@@ -368,6 +488,7 @@ public class PlatformModule : AbpModule
         {
             app.UseMultiTenancy();
         }
+
 
         app.UseUnitOfWork();
         app.UseDynamicClaims();

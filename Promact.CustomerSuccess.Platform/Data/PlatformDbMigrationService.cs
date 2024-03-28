@@ -6,7 +6,6 @@ using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
 using Volo.Abp.TenantManagement;
-
 namespace Promact.CustomerSuccess.Platform.Data;
 
 public class PlatformDbMigrationService : ITransientDependency

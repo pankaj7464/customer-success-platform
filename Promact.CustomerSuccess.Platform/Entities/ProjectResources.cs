@@ -3,14 +3,11 @@ using Volo.Abp.Domain.Entities.Auditing;
 
 namespace Promact.CustomerSuccess.Platform.Entities
 {
-    public class ProjectResources : AuditedAggregateRootWithUser<Guid, ApplicationUser>
+    public class ProjectResources : AuditedEntity<Guid>
     {
         [ForeignKey("Project")]
         public Guid ProjectId { get; set; }
         public virtual Project? Project { get; set; }
-        [ForeignKey("Resource")]
-        public Guid ResourceId { get; set; }
-        public virtual Guid Resource { get; set; }
         public double AllocationPercentage { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }

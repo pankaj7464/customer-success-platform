@@ -19,19 +19,27 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
     {
     }
 
+    public DbSet<ProjectResources> Resources { get; set; } /*Added*/
+    public DbSet<ProjectUpdate> ProjectUpdate { get; set; } /*added*/
+    public DbSet<ApprovedTeam> ApprovedTeams { get; set; } /*added*/
+
+    public DbSet<Stakeholder> Stakeholders    { get; set; }
+    public DbSet<VersionHistory> VersionHistories    { get; set; }
+    public DbSet<AuditHistory> AuditHistories    { get; set; }
     public DbSet<Project> Projects { get; set; }
-    public DbSet<Document> Documents { get; set; }
-    public DbSet<DocumentVersion> DocumentVersions { get; set; }
-    public DbSet<Organization> Organizations { get; set; }
+
     public DbSet<ClientFeedback> ClientFeedbacks { get; set; }
     public DbSet<ProjectBudget> ProjectBudgets { get; set; }
+   
     public DbSet<PhaseMilestone> PhaseMilestones { get; set; }
     public DbSet<ProjectResources> ProjectResources { get; set; }
     public DbSet<RiskProfile> RiskProfiles { get; set; }
     public DbSet<MeetingMinute> MeetingMinutes { get; set; }
     public DbSet<EscalationMatrix> EscalationMatrices { get; set; }
     public DbSet<Sprint> Sprints { get; set; }
-    public DbSet<ApplicationUser> Users { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -49,10 +57,23 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
         builder.ConfigureTenantManagement();
 
         /* Configure your own entities here */
-        builder.Entity<DocumentVersion>(entity =>
-        {                        
-            entity.ConfigureByConvention();
+        builder.Entity<ProjectResources>(resouces =>
+        {
+            resouces.ConfigureByConvention();
         });
+        builder.Entity<ProjectUpdate>(projectUpdate =>
+        {
+            projectUpdate.ConfigureByConvention();
+        });
+        builder.Entity<ApprovedTeam>(approveTeam =>
+        {
+            approveTeam.ConfigureByConvention();
+        });
+        builder.Entity<AuditHistory>(auditHistory =>
+        {
+            auditHistory.ConfigureByConvention();
+        });
+ 
         builder.Entity<EscalationMatrix>(EscalationMatrix =>
         {            
             EscalationMatrix.ConfigureByConvention();
@@ -61,10 +82,7 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
         {            
             MeetingMinute.ConfigureByConvention();
         });
-        builder.Entity<Organization>(Organization =>
-        {
-            Organization.ConfigureByConvention();
-        });
+  
         builder.Entity<Project>(Project =>
         {
             Project.ConfigureByConvention();
@@ -93,14 +111,20 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
         {
             ClientFeedback.ConfigureByConvention();
         });
-        builder.Entity<Document>(Document =>
-        {
-            Document.ConfigureByConvention();
-        });
-        builder.Entity<ApplicationUser>(ApplicationUser =>
+   
+        builder.Entity<User>(ApplicationUser =>
         {
             ApplicationUser.ConfigureByConvention();
         });
+       builder.Entity<UserRole>(userRole =>
+        {
+            userRole.ConfigureByConvention();
+        });
+       builder.Entity<Role>(role =>
+        {
+            role.ConfigureByConvention();
+        });
+       
 
 
     }

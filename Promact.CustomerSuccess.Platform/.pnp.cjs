@@ -17,6 +17,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       "it either without using the @yarnpkg/pnp package, as the data layout",
       "is entirely unspecified and WILL change from a version to another."
     ],
+
     "dependencyTreeRoots": [
       {
         "name": "my-app",

@@ -55,6 +55,7 @@ using System.Security.Cryptography;
 using Volo.Abp.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -171,20 +172,26 @@ namespace Promact.CustomerSuccess.Platform;
 
         }
 
-        context.Services.AddAuthentication()
+        context.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+
           .AddJwtBearer(options =>
           {
+
+              options.RequireHttpsMetadata = false;
+              options.SaveToken = true;
               options.TokenValidationParameters = new TokenValidationParameters
               {
-                  ValidateIssuer = true,
-                  ValidateAudience = true,
-                  ValidateLifetime = true,
                   ValidateIssuerSigningKey = true,
-                  ValidIssuer = configuration["Jwt:Issuer"], 
-                  ValidAudience = configuration["Jwt:Audience"],
-                  IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"])) 
+                  IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["jwt:key"])),
+                  ValidateIssuer = false,
+                  ValidateAudience = false
               };
           });
+
 
         ConfigureAuthentication(context);
         ConfigureBundles();

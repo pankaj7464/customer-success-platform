@@ -56,6 +56,7 @@ using Volo.Abp.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Promact.CustomerSuccess.Platform.Constants;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -117,6 +118,7 @@ namespace Promact.CustomerSuccess.Platform;
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
         context.Services.AddScoped<IEmailService, EmailService>();
+        context.Services.AddHttpClient();
         context.Services.PreConfigure<AbpMvcDataAnnotationsLocalizationOptions>(options =>
         {
             options.AddAssemblyResource(
@@ -178,22 +180,22 @@ namespace Promact.CustomerSuccess.Platform;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
 
-          .AddJwtBearer(options =>
-          {
+           .AddJwtBearer(options =>
+           {
 
-              options.RequireHttpsMetadata = false;
-              options.SaveToken = true;
-              options.TokenValidationParameters = new TokenValidationParameters
-              {
-                  ValidateIssuerSigningKey = true,
-                  IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["jwt:key"])),
-                  ValidateIssuer = false,
-                  ValidateAudience = false
-              };
-          });
-
+               options.RequireHttpsMetadata = false;
+               options.SaveToken = true;
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateIssuerSigningKey = true,
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["jwt:key"])),
+                   ValidateIssuer = false,
+                   ValidateAudience = false
+               };
+           });
 
         ConfigureAuthentication(context);
+        ConfigureAuthorization(context);
         ConfigureBundles();
         ConfigureMultiTenancy();
         ConfigureUrls(configuration);
@@ -215,7 +217,33 @@ namespace Promact.CustomerSuccess.Platform;
             options.IsDynamicClaimsEnabled = true;
         });
     }
+  
 
+    private  void  ConfigureAuthorization(ServiceConfigurationContext context)
+    {
+        context.Services.AddAuthorization(options =>
+        {
+
+            //Project policy
+            options.AddPolicy(PolicyName.ProjectCreatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor");
+            });
+            options.AddPolicy(PolicyName.ProjectUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor");
+            });
+            options.AddPolicy(PolicyName.ProjectDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor");
+            });
+           
+
+
+
+            
+        });
+    }
 
     private X509Certificate2 GetSigningCertificate(IWebHostEnvironment hostingEnv,
                             IConfiguration configuration)

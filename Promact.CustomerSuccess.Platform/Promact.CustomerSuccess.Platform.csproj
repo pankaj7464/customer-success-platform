@@ -108,4 +108,8 @@
     <Content Remove="$(UserProfile)\.nuget\packages\*\*\contentFiles\any\*\*.abppkg*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Uttils\" />
+  </ItemGroup>
+
 </Project>

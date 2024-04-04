@@ -1,23 +1,20 @@
 ﻿using Auth0.ManagementApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Promact.CustomerSuccess.Platform.Entities;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using Volo.Abp.Application.Services;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
 
 
 namespace Promact.CustomerSuccess.Platform.Services.Auth0
 {
-    public class Auth0Service : IAuth0Service,ITransientDependency
+    public class Auth0Service : ApplicationService, IAuth0Service
     {
         private readonly IManagementConnection _managementConnection;
         private readonly IConfiguration _configuration;
@@ -49,14 +46,14 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
             return "something went wrong";
 
         }
-        [Authorize(Roles = "admin")]
         [HttpGet]
+        [Authorize(Roles = "admin")]
         public async Task<ICurrentUser> adminaccess()
-        {
-            var user = _currentUser;
-            return user;
-        }
+        { 
 
+            var user = _currentUser;
+            return user;   
+        }
 
         private async Task<IEnumerable<string>> GetRolesFromUrlAsync(string userid)
         {
@@ -68,6 +65,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
                 var response = await _httpClient.GetAsync($"{_configuration["Auth0:Domain"]}/api/v2/users/{userid}/roles");
 
                 // Check if the request was successful
+
                 response.EnsureSuccessStatusCode();
 
                 // Read the response content

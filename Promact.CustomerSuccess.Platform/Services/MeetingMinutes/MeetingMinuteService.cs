@@ -34,7 +34,7 @@ namespace Promact.CustomerSuccess.Platform.Services.MeetingMinutes
                 Body = Template.GenerateMeetingMinutesEmailBody(meetingMinuteDto, "Created"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+             await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return meetingMinuteDto;
         }
@@ -53,7 +53,7 @@ namespace Promact.CustomerSuccess.Platform.Services.MeetingMinutes
                 Body = Template.GenerateMeetingMinutesEmailBody(meetingMinuteDto, "Updated"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+           await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return meetingMinuteDto;
         }
@@ -76,7 +76,7 @@ namespace Promact.CustomerSuccess.Platform.Services.MeetingMinutes
                 Body = Template.GenerateMeetingMinutesEmailBody(ObjectMapper.Map<MeetingMinute, MeetingMinuteDto>(meetingMinute), "Deleted"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+           await _emailService.SendEmailToStakeHolder(projectDetail);
         }
 
         public async Task<List<MeetingMinute>> GetMeetingMinuteByProjectIdAsync(Guid projectId)

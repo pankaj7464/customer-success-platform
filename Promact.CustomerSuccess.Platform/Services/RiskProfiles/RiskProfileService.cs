@@ -41,7 +41,7 @@ namespace Promact.CustomerSuccess.Platform.Services.RiskProfiles
                 Subject = "Risk Profile Created Alert",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return riskProfileDto;
         }

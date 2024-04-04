@@ -1,9 +1,11 @@
 ﻿using Auth0.ManagementApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Promact.CustomerSuccess.Platform.Entities;
+using Promact.CustomerSuccess.Platform.Services.Uttils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -20,14 +22,16 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly ICurrentUser _currentUser;
-        public Auth0Service(IConfiguration configuration, HttpClient httpClient, ICurrentUser currentUser)
+        private readonly IUttilService _UttilService;
+        public Auth0Service(IConfiguration configuration, HttpClient httpClient, ICurrentUser currentUser , IUttilService uttilService)
         {
             _httpClient = httpClient;
             _currentUser = currentUser;
+            _UttilService = uttilService;
             _configuration = configuration;
         }
 
-        public async Task<string> GetJwtToken(string token)
+        public async Task<string> ExchangeToken(string token)
         {
             // Decode the JWT token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -37,7 +41,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
             var UserId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
             if (UserId != null)
             {
-                var role = await GetRolesFromUrlAsync(UserId);
+                var role =await _UttilService.GetRolesFromUrlAsync(UserId);
                 var claim = CreateClaims(UserId, role);
                 var jwt_token = await GenerateJwtTokenAsync(claim);
                 return jwt_token;
@@ -46,47 +50,6 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
             return "something went wrong";
 
         }
-        [HttpGet]
-        [Authorize(Roles = "admin")]
-        public async Task<ICurrentUser> adminaccess()
-        { 
-
-            var user = _currentUser;
-            return user;   
-        }
-
-        private async Task<IEnumerable<string>> GetRolesFromUrlAsync(string userid)
-        {
-            try
-            {
-                // Add the JWT token in the request headers
-                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Auth0:Access_token"]);
-
-                var response = await _httpClient.GetAsync($"{_configuration["Auth0:Domain"]}/api/v2/users/{userid}/roles");
-
-                // Check if the request was successful
-
-                response.EnsureSuccessStatusCode();
-
-                // Read the response content
-                var content = await response.Content.ReadAsStringAsync();
-
-                // Deserialize the JSON response
-                var roles = JsonConvert.DeserializeObject<List<Role>>(content);
-
-                // Extract role names
-                return roles.Select(r => r.Name);
-            }
-            catch (Exception ex)
-            {
-                // Handle exception
-                return Enumerable.Empty<string>();
-            }
-        }
-
-
-
-
 
         /// <summary>
         /// Generates a JWT token for the specified user with the provided claims.

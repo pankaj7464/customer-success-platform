@@ -38,7 +38,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ProjectUpdates
                 Body = Template.GetProjectUpdateEmailBody(projectUpdateDto,"Created"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return projectUpdateDto;
         }
@@ -80,7 +80,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ProjectUpdates
                 Body = Template.GetProjectUpdateEmailBody(ObjectMapper.Map<ProjectUpdate, ProjectUpdateDto>(projectUpdate), "Deleted"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
         }
 
         public async Task<List<ProjectUpdateDto>> GetProjectUpdatesByProjectIdAsync(Guid projectId)

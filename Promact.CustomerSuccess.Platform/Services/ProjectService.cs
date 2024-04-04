@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Entities;
@@ -8,12 +9,11 @@ using System.Linq;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using static Volo.Abp.UI.Navigation.DefaultMenuNames.Application;
 
 namespace Promact.CustomerSuccess.Platform.Services
 {
 
-    [Authorize(Roles = "admin")]
+    [Authorize]
     public class ProjectService : CrudAppService<
                                 Project,
                                 ProjectDto,
@@ -26,18 +26,14 @@ namespace Promact.CustomerSuccess.Platform.Services
         private readonly IEmailService _emailService;
         
         private readonly IRepository<Project,Guid> _projectRepository;
-        private readonly IRepository<Role,Guid> _roleRepository;
         private readonly IRepository<Stakeholder,Guid> _stakeholderRepository;
-        private readonly IRepository<UserRole,Guid> _userRoleRepository;
         private readonly IRepository<User,Guid> _userRepository;
-        public ProjectService(IRepository<Project, Guid> projectRepository,IEmailService emailService, IRepository<Role, Guid> roleRepository,
-            IRepository<Stakeholder, Guid> stakeholderRepository, IRepository<UserRole, Guid> userRoleRepository, IRepository<User, Guid> userRepository) : base(projectRepository)
+        public ProjectService(IRepository<Project, Guid> projectRepository,IEmailService emailService,
+            IRepository<Stakeholder, Guid> stakeholderRepository,IRepository<User, Guid> userRepository) : base(projectRepository)
         {
             _emailService = emailService;
             _projectRepository = projectRepository;
-            _roleRepository = roleRepository;
             _stakeholderRepository = stakeholderRepository;
-            _userRoleRepository = userRoleRepository;
             _userRepository = userRepository;
         }
         [Authorize(Policy=PolicyName.ProjectCreatePolicy)]
@@ -60,66 +56,55 @@ namespace Promact.CustomerSuccess.Platform.Services
             await base.DeleteAsync(id);
         }
 
-        [Authorize(Policy = PolicyName.ProjectDeletePolicy)]
-        public override Task<PagedResultDto<ProjectDto>> GetListAsync(PagedAndSortedResultRequestDto input)
-        {
-            return base.GetListAsync(input);
-        }
-
-
-        [HttpGet("projects")]
-        public async Task<List<ProjectDto>> GetProjectsByUserIdAsync(Guid userId)
-        {
-            var projects = new List<Project>();
-                var userRole = await _userRoleRepository.FirstOrDefaultAsync(ur => ur.UserId == userId);
-                var role = await _roleRepository.FirstOrDefaultAsync(r => r.Id == userRole.RoleId);
-            if (userRole != null)
-            {
-                switch (role.Name)
-                {
-                    case "Admin":
-                    case "Auditor":
-                        // Admin or Auditor can see all projects
-                        projects = await _projectRepository.GetListAsync();
-                        break;
-
-                    case "Manager":
-                        // Manager can see projects where they are project managers
-                        projects = await _projectRepository.GetListAsync(p => p.ManagerId == userId);
-                        break;
-
-                    case "Client":
-                        // Client can see projects where they are stakeholders
-
-                        // Fetch all stakeholders with the specified email
-                        var user = await _userRepository.GetAsync(userId);
-                        if (user == null)
-                        {
-                            return null;
-                        }
-                        var stakeholders = await _stakeholderRepository
-                             .GetListAsync(s => s.Email == user.Email);
-
-                        // Fetch projects associated with the retrieved stakeholders
-                        var projectIds = stakeholders.Select(s => s.ProjectId).ToList();
-                        projects = await _projectRepository
-                         .GetListAsync(p => projectIds.Contains(p.Id));
-
-                        break;
-
-                    default:
-                        // Handle other roles as needed
-                        break;
-                }
-            }
-            else return null;
-            return ObjectMapper.Map<List<Project>, List<ProjectDto>>(projects);
-
-        }
-
-
-          
-
        
+        public async override Task<PagedResultDto<ProjectDto>> GetListAsync(PagedAndSortedResultRequestDto input)
+        {
+            // Get the current user's ID
+            var currentUserId =Guid.NewGuid();
+            List<Project> projects = new List<Project>();
+            List<string> roles = new List<string>();
+
+            // Check if the array of roles contains a specific role
+            if (roles.Any(role => role == "Admin" || role == "Auditor"))
+            {
+                // Admin or Auditor can see all projects
+                var allProjects = await _projectRepository.GetListAsync();
+                projects.AddRange(allProjects);
+            }
+
+            if (roles.Contains("Manager"))
+            {
+                // Manager can see projects where they are project managers
+                var managerProjects = await _projectRepository.GetListAsync(p => p.ManagerId == currentUserId);
+                projects.AddRange(managerProjects);
+            }
+
+            if (roles.Contains("Client"))
+            {
+                // Client can see projects where they are stakeholders
+
+                // Fetch all stakeholders with the specified user ID
+                var user = await _userRepository.GetAsync(currentUserId);
+                var stakeholders = await _stakeholderRepository
+                    .GetListAsync(s => s.Email ==user.Email);
+
+                // Fetch projects associated with the retrieved stakeholders
+                var projectIds = stakeholders.Select(s => s.ProjectId).ToList();
+                var clientProjects = await _projectRepository
+                    .GetListAsync(p => projectIds.Contains(p.Id));
+                projects.AddRange(clientProjects);
+            }
+
+            // Map the fetched entities to DTOs
+            var projectDtos = ObjectMapper.Map<List<Project>, List<ProjectDto>>(projects);
+
+            // Return the paged result
+            return new PagedResultDto<ProjectDto>
+            {
+                TotalCount = projects.Count,
+                Items = projectDtos
+            };
+        }
+
     }
 }

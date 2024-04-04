@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
+using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Entities;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.AuditHistory;
-using Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using Volo.Abp.Users;
-using static Volo.Abp.Identity.IdentityPermissions;
 
 namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
 {
+
+    [Authorize]
     public class AuditHistoryService : CrudAppService<AuditHistory,
                        AuditHistoryDto,
                        Guid,
@@ -32,6 +32,7 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
             _userRepository = userRepository;
         }
 
+        [Authorize(Policy = PolicyName.AuditHistoryCreatePolicy)]
         public override async Task<AuditHistoryDto> CreateAsync(CreateAuditHistoryDto input)
         {
             var auditHistoryDto = await base.CreateAsync(input);
@@ -44,11 +45,13 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
                 Body = Template.GetAuditHistoryEmailBody(auditHistoryDto, "Created"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
+         
 
             return auditHistoryDto;
         }
 
+        [Authorize(Policy = PolicyName.AuditHistoryUpdatePolicy)]
         public override async Task<AuditHistoryDto> UpdateAsync(Guid id, UpdateAuditHistoryDto input)
         {
             var auditHistoryDto = await base.UpdateAsync(id, input);
@@ -62,10 +65,12 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
                 ProjectId = projectId,
 
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return auditHistoryDto;
         }
+
+        [Authorize(Policy = PolicyName.AuditHistoryDeletePolicy)]
         public override async Task DeleteAsync(Guid id)
         {
             var auditnHistory = await _auditHistoryRepository.GetAsync(id);
@@ -77,10 +82,16 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
                 ProjectId = projectId,
                 Body = Template.GetAuditHistoryEmailBody(ObjectMapper.Map<AuditHistory, AuditHistoryDto>(auditnHistory), "Deleted"),
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             await base.DeleteAsync(id);
-        } 
+        }
+
+
+        public override Task<PagedResultDto<AuditHistoryDto>> GetListAsync(PagedAndSortedResultRequestDto input)
+        {
+            return base.GetListAsync(input);
+        }
         public async Task<List<AuditHistoryDto>> GetAuditHistoriesByProjectIdAsync(Guid projectId)
         {
 
@@ -95,14 +106,20 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
             // Map version histories to DTOs
             var auditHistoryDtos = ObjectMapper.Map<List<AuditHistory>, List<AuditHistoryDto>>(auditHistories);
 
-            // If version histories exist
-            if (auditHistoryDtos != null)
+            // If version histories exist and there are users
+            if (auditHistoryDtos != null && users != null)
             {
+                // Create a dictionary for faster lookup
+                var userDictionary = users.ToDictionary(u => u.Id);
+
                 // Iterate through each version history
-                foreach (var aduitHistoryDto in auditHistoryDtos)
+                foreach (var auditHistoryDto in auditHistoryDtos)
                 {
-                    // Find the user associated with the version history's CreatedBy property
-                    aduitHistoryDto.ReviewedByUser = users.FirstOrDefault(u => u.Id == aduitHistoryDto.ReviewedBy);
+                    // Find the user associated with the version history's ReviewedBy property
+                    if (userDictionary.TryGetValue(auditHistoryDto.ReviewedBy, out var user))
+                    {
+                        auditHistoryDto.ReviewedByUser = user;
+                    }
                 }
             }
 

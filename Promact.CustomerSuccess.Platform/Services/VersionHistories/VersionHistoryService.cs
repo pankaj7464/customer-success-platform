@@ -43,7 +43,7 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
                 Subject = "Version History Created Alert",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return versionHistoryDto;
         }
@@ -67,7 +67,7 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
                 Subject = "Version History Created Alert",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             await base.DeleteAsync(id);
         }
@@ -85,15 +85,27 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
             var versionHistoryDtos = ObjectMapper.Map<List<VersionHistory>, List<VersionHistoryDto>>(versionHistories);
 
             // If version histories exist
+            // Assuming versionHistoryDtos is a collection of VersionHistoryDto objects
+            // and users is a collection of ApplicationUser objects
+
+            // If version histories exist
             if (versionHistoryDtos != null)
             {
+                // Create a dictionary for quick lookup of users by their Id
+                var userDictionary = users.ToDictionary(u => u.Id);
+
                 // Iterate through each version history
                 foreach (var versionHistory in versionHistoryDtos)
                 {
-                    // Find the user associated with the version history's CreatedBy property
-                    versionHistory.Creater = users.FirstOrDefault(u => u.Id == versionHistory.CreatedBy);
+                    // Use the dictionary to find the user associated with the version history's CreatedBy property
+                    if (userDictionary.TryGetValue(versionHistory.CreatedBy, out var user))
+                    {
+                        versionHistory.Creater = user;
+                    }
+                    
                 }
             }
+
 
             return versionHistoryDtos;
         }

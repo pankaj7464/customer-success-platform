@@ -40,7 +40,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Sprints
                 ProjectId = projectId,
                 Body = Template.GetSprintEmailBody(sprintDto, "Created"),
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return sprintDto;
         }

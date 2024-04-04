@@ -1,4 +1,6 @@
-﻿using Promact.CustomerSuccess.Platform.Entities;
+﻿using Microsoft.AspNetCore.Authorization;
+using Promact.CustomerSuccess.Platform.Constants;
+using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.EscalationMatrix;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
@@ -8,6 +10,7 @@ using Volo.Abp.Domain.Repositories;
 
 namespace Promact.CustomerSuccess.Platform.Services.EscalationMatrices
 {
+    [Authorize]
     public class EscalationMatrixService : CrudAppService<EscalationMatrix,
                                 EscalationMatrixDto,
                                 Guid,
@@ -29,6 +32,8 @@ namespace Promact.CustomerSuccess.Platform.Services.EscalationMatrices
 
         }
 
+
+        [Authorize(Policy = PolicyName.EscalationMatrixCreatePolicy)]
         public override async Task<EscalationMatrixDto> CreateAsync(CreateEscalationMatrix input)
         {
             var escalationMatrixDto = await base.CreateAsync(input);
@@ -42,35 +47,42 @@ namespace Promact.CustomerSuccess.Platform.Services.EscalationMatrices
                 ProjectId = projectId,
                 Body = "Escalation matrix Created please check !"
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return escalationMatrixDto;
         }
-
+        [Authorize(Policy = PolicyName.EscalationMatrixUpdatePolicy)]
         public override async Task<EscalationMatrixDto> UpdateAsync(Guid id, UpdateEscalationMatrix input)
         {
             var escalationMatrixDto = await base.UpdateAsync(id, input);
+            var projectId = input.ProjectId;
 
-            var emailDto = new EmailDto
+            var projectDetail = new EmailToStakeHolderDto
             {
-                To = Useremail,
                 Subject = "Escalation Matrix Updated alert",
-                Body ="Escalation Matrix Updated "
+                ProjectId = projectId,
+                Body = "Escalation matrix Updated please check !"
             };
-            _emailService.SendEmail(emailDto);
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return escalationMatrixDto;
         }
 
+        [Authorize(Policy = PolicyName.EscalationMatrixDeletePolicy)]
         public override async Task DeleteAsync(Guid id)
         {
-            var emailDto = new EmailDto
+            var escalation =await base.GetAsync(id);
+
+            var projectId = escalation.ProjectId;
+
+            var projectDetail = new EmailToStakeHolderDto
             {
-                To = Useremail,
                 Subject = "Escalation Matrix Deleted alert",
-                Body = "Escalation matrix Deleted "
+                ProjectId = projectId,
+                Body = "Escalation matrix Deleted please check !"
             };
-            _emailService.SendEmail(emailDto);
+            await _emailService.SendEmailToStakeHolder(projectDetail);
+
 
             await base.DeleteAsync(id);
         }

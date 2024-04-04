@@ -1,4 +1,6 @@
-﻿using Promact.CustomerSuccess.Platform.Entities;
+﻿using Microsoft.AspNetCore.Authorization;
+using Promact.CustomerSuccess.Platform.Constants;
+using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos.ClientFeedback;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
@@ -7,6 +9,7 @@ using Volo.Abp.Domain.Repositories;
 
 namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
 {
+    [Authorize]
     public class ClientFeedbackService : CrudAppService<ClientFeedback, ClientFeedbackDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateCLientFeedback, CreateUpdateCLientFeedback>, IClientFeedbackService
     {
         IRepository<ClientFeedback, Guid> _repository;
@@ -17,6 +20,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
             _repository = repository;
         }
 
+        [Authorize(Policy = PolicyName.ClientFeedbackCreatePolicy)]
         public override async Task<ClientFeedbackDto> CreateAsync(CreateUpdateCLientFeedback input)
         {
             var clientFeedback = await base.CreateAsync(input);
@@ -33,7 +37,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
 
             return clientFeedback;
         }
-
+        [Authorize(Policy = PolicyName.ClientFeedbackUpdatePolicy)]
         public override async Task<ClientFeedbackDto> UpdateAsync(Guid id, CreateUpdateCLientFeedback input)
         {
             var ClientFeedbackDto = await base.UpdateAsync(id, input);
@@ -50,7 +54,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
 
             return ClientFeedbackDto;
         }
-
+        [Authorize(Policy = PolicyName.ClientFeedbackDeletePolicy)]
         public override async Task DeleteAsync(Guid id)
         {
             // Retrieve approved team to get details before deletion
@@ -68,7 +72,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
                 Body = Template.GetClientFeedbackEmailBody(ObjectMapper.Map<ClientFeedback, ClientFeedbackDto>(cleintFeedback), "Deleted"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail));
         }
 
 

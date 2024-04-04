@@ -4,6 +4,8 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Promact.CustomerSuccess.Platform.Services.Dtos.ApprovedTeam;
+using Microsoft.AspNetCore.Authorization;
+using Promact.CustomerSuccess.Platform.Constants;
 namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
 {
     public class ApprovedTeamService : CrudAppService<ApprovedTeam, ApprovedTeamDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateApprovedTeamDto, CreateUpdateApprovedTeamDto>
@@ -17,6 +19,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
             _approvedTeamRepository = repository;
         }
 
+        [Authorize(Policy = PolicyName.ApproveTeamCreatePolicy)]
         public override async Task<ApprovedTeamDto> CreateAsync(CreateUpdateApprovedTeamDto input)
         {
             var approvedTeamDto = await base.CreateAsync(input);
@@ -29,11 +32,12 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
                 Body=Template.GetApproveTeamEmailBody(approvedTeamDto,"Created"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return approvedTeamDto;
         }
 
+        [Authorize(Policy = PolicyName.ApproveTeamUpdatePolicy)]
         public override async Task<ApprovedTeamDto> UpdateAsync(Guid id, CreateUpdateApprovedTeamDto input)
         {
             var approvedTeamDto = await base.UpdateAsync(id, input);
@@ -51,6 +55,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
             return approvedTeamDto;
         }
 
+        [Authorize(Policy = PolicyName.ApproveTeamDeletePolicy)]
         public override async Task DeleteAsync(Guid id)
         {
             // Retrieve approved team to get details before deletion

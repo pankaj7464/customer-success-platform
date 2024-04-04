@@ -19,7 +19,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             _stakeholderRepository = stakeholderRepository;
         }
 
-        public async void SendEmailToStakeHolder(EmailToStakeHolderDto request)
+        public async Task SendEmailToStakeHolder(EmailToStakeHolderDto request)
         {
             try
             {
@@ -37,14 +37,13 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
                     };
                 }
                 email.Subject = request.Subject;
-
-                // Send email asynchronously
-                await Task.Run(() => SendEmailToMultipleReciever(email));
+                await SendEmailToMultipleReciever(email);
+            
             }
             catch (Exception ex) { }
         }
 
-        public void SendEmailToMultipleReciever(MimeMessage email)
+        public async Task SendEmailToMultipleReciever(MimeMessage email)
         {
 
             Console.WriteLine("=================================================");
@@ -87,7 +86,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
 
         }
 
-        public void SendEmail(EmailDto request)
+        public async Task SendEmail(EmailDto request)
         {
 
             Console.WriteLine("=================================================");
@@ -119,5 +118,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             catch (Exception ex) { }
 
         }
+
+       
     }
 }

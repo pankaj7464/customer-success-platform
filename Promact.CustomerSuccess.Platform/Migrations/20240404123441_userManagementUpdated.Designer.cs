@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace Promact.CustomerSuccess.Platform.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    [Migration("20240317113101_lenovo")]
-    partial class lenovo
+    [Migration("20240404123441_userManagementUpdated")]
+    partial class userManagementUpdated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -643,9 +643,6 @@ namespace Promact.CustomerSuccess.Platform.Migrations
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("active")
-                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

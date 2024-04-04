@@ -33,7 +33,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Resource
                 Body = Template.GenerateProjectResourceEmailBody(resourceDto,"Created"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return resourceDto;
         }

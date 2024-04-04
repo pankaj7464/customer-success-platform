@@ -55,7 +55,7 @@ namespace Promact.CustomerSuccess.Platform.Services.PhaseMilestones
                 Body ="Phase mile stone updated please check",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return phaseMilestoneDto;
         }
@@ -73,7 +73,7 @@ namespace Promact.CustomerSuccess.Platform.Services.PhaseMilestones
                 Body ="Phase milestone deleted !",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             await base.DeleteAsync(id);
         }

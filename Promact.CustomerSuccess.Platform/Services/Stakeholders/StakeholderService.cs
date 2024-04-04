@@ -36,7 +36,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Stakeholders
                 ProjectId = projectId,
                 Body = Template.GetStakeholderEmailBody(stakeholderDto,"Created")
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return stakeholderDto;
         }
@@ -55,7 +55,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Stakeholders
                 ProjectId = projectId,
                 Body = Template.GetStakeholderEmailBody(stakeholderDto,"Updated")
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return stakeholderDto;
         }
@@ -74,7 +74,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Stakeholders
                 ProjectId = projectId,
                 Body = Template.GetStakeholderEmailBody(ObjectMapper.Map<Stakeholder, StakeholderDto>(stakeholder), "Deleted"),
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             await base.DeleteAsync(id);
         }

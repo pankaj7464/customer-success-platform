@@ -48,7 +48,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ProjectBudgets
                 ProjectId = projectId,
             };
 
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail)) ;
+            await _emailService.SendEmailToStakeHolder(projectDetail) ;
 
             return projectBudgetDto;
         }
@@ -65,7 +65,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ProjectBudgets
                 Body    =   Template.GenerateProjectBudgetEmailBody(projectBudgetDto,"Updated"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
             return projectBudgetDto;
         }
 
@@ -86,7 +86,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ProjectBudgets
                 Body = Template.GenerateProjectBudgetEmailBody(ObjectMapper.Map<ProjectBudget, ProjectBudgetDto>(projectBudget), "Deleted"),
                 ProjectId = projectBudget.ProjectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
 
 

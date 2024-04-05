@@ -59,7 +59,7 @@ namespace Promact.CustomerSuccess.Platform.Services.RiskProfiles
                 Subject = "Risk Profile Created Alert",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return riskProfileDto;
         }
@@ -81,7 +81,7 @@ namespace Promact.CustomerSuccess.Platform.Services.RiskProfiles
                 Subject = "Project Update Created Alert",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
         }
 
         public async Task<List<RiskProfileDto>> GetRiskProfilesByProjectIdAsync(Guid projectId)

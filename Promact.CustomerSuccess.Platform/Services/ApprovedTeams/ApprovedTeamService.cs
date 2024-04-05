@@ -30,7 +30,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Approved Team Created alert",
-                Body=Template.GetApproveTeamEmailBody(approvedTeamDto,"Created"),
+                Body = Template.GetApproveTeamEmailBody(approvedTeamDto, "Created"),
                 ProjectId = projectId,
             };
             await _emailService.SendEmailToStakeHolder(projectDetail);
@@ -51,7 +51,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
                 Body = Template.GetApproveTeamEmailBody(approvedTeamDto, "Updated"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return approvedTeamDto;
         }
@@ -71,10 +71,10 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Approved Team Deleted alert",
-                Body =Template.GetApproveTeamEmailBody(ObjectMapper.Map<ApprovedTeam, ApprovedTeamDto>(approvedTeam),"Deleted"),
+                Body = Template.GetApproveTeamEmailBody(ObjectMapper.Map<ApprovedTeam, ApprovedTeamDto>(approvedTeam), "Deleted"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
         }
 
 

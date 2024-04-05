@@ -15,10 +15,10 @@ namespace Promact.CustomerSuccess.Platform.Services.Sprints
     {
         private readonly IEmailService _emailService;
         private readonly string Useremail;
-        private readonly string Username ;
+        private readonly string Username;
         private readonly IRepository<Sprint, Guid> _sprintRepository;
 
-        public SprintService(IRepository<Sprint, Guid> repository,IEmailService emailService) : base(repository)
+        public SprintService(IRepository<Sprint, Guid> repository, IEmailService emailService) : base(repository)
         {
             _emailService = emailService;
             _sprintRepository = repository;
@@ -27,7 +27,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Sprints
 
         public override async Task<SprintDto> CreateAsync(CreateSprintDto input)
         {
-          
+
             var sprintDto = await base.CreateAsync(input);
 
             // Send email notification
@@ -59,7 +59,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Sprints
                 ProjectId = projectId,
                 Body = Template.GetSprintEmailBody(sprintDto, "Updated"),
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return sprintDto;
         }
@@ -78,7 +78,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Sprints
                 ProjectId = projectId,
                 Body = Template.GetSprintEmailBody(ObjectMapper.Map<Sprint, SprintDto>(sprint), "Deleted"),
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
             await base.DeleteAsync(id);
         }
         public async Task<List<SprintDto>> GetSprintsByProjectIdAsync(Guid projectId)

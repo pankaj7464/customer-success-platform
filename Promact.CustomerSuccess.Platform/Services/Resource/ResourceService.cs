@@ -30,7 +30,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Resource
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Resource Created Alert",
-                Body = Template.GenerateProjectResourceEmailBody(resourceDto,"Created"),
+                Body = Template.GenerateProjectResourceEmailBody(resourceDto, "Created"),
                 ProjectId = projectId,
             };
             await _emailService.SendEmailToStakeHolder(projectDetail);
@@ -49,10 +49,10 @@ namespace Promact.CustomerSuccess.Platform.Services.Resource
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Resource Updated Alert",
-                Body = Template.GenerateProjectResourceEmailBody(resourceDto,"Updated"),
+                Body = Template.GenerateProjectResourceEmailBody(resourceDto, "Updated"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return resourceDto;
         }
@@ -77,8 +77,8 @@ namespace Promact.CustomerSuccess.Platform.Services.Resource
                 ProjectId = projectId,
                 Body = "Project resource has been deleted"
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
- 
+            await _emailService.SendEmailToStakeHolder(projectDetail);
+
         }
 
         public async Task<List<ProjectResourcesDto>> GetResourcesByProjectIdAsync(Guid projectId)

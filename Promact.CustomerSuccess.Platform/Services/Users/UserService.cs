@@ -1,6 +1,7 @@
 ﻿
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
@@ -56,19 +57,19 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
             if (result.Succeeded)
             {
 
-                
-                var role = await _roleManager.FindByNameAsync("Client");
+
+                var role = await _roleManager.FindByNameAsync("admin");
 
                 if (role != null)
                 {
 
-                await _userManager.AddToRoleAsync(user, "Client");
+                    await _userManager.AddToRoleAsync(user, "admin");
                 }
                 else
                 {
-                    var clientRole = new Volo.Abp.Identity.IdentityRole(Guid.NewGuid(),"Client");
+                    var clientRole = new Volo.Abp.Identity.IdentityRole(Guid.NewGuid(), "admin");
                     var createRoleResult = await _roleManager.CreateAsync(clientRole);
-                    await _userManager.AddToRoleAsync(user,"Client");
+                    await _userManager.AddToRoleAsync(user, "admin");
                 }
 
                 // Send confirmation email
@@ -133,6 +134,8 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
                 throw new Exception("Failed to delete user.");
             }
         }
+
+
     }
 
     public class Response

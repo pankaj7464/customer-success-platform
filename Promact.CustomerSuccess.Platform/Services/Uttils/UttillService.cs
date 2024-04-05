@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Promact.CustomerSuccess.Platform.Entities;
+﻿using Newtonsoft.Json;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth.Auth;
 using System.Text;
 using Volo.Abp.Identity;
-
 namespace Promact.CustomerSuccess.Platform.Services.Uttils
 {
     public class UttillService : IUttilService
@@ -18,16 +14,11 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
 
         public UttillService(IConfiguration configuration, HttpClient httpClient, IdentityUserManager userManager)
         {
-
             _userManager = userManager;
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Auth0:Access_token"]);
-
         }
-
-
-
         public async Task<UserWithRolesDto> GetUserByEmailAsync(string email)
         {
             // Find the user by email
@@ -102,15 +93,11 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
                 return false;
             }
         }
-
         public async Task<bool> UpdateUserAsync(CreateUpdateUserDto userDto)
         {
             try
             {
-                // Implement logic to update a user in Auth0 using userDto
-                // Example: Call Auth0 Management API to update user
-                // var response = await _managementConnection.UpdateUserAsync(userDto);
-                // return response.IsSuccessStatusCode;
+               
                 return true;
             }
             catch (Exception ex)

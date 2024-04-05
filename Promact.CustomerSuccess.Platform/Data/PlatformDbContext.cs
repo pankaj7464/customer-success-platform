@@ -4,6 +4,7 @@ using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
+using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
 using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
@@ -78,10 +79,16 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
             MeetingMinute.ConfigureByConvention();
         });
 
-        builder.Entity<Project>(Project =>
+        builder.Entity<Project>(b =>
         {
-            Project.ConfigureByConvention();
+            b.HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(p => p.ManagerId)
+                .IsRequired();
+
+            b.ConfigureByConvention();
         });
+
         builder.Entity<ProjectBudget>(ProjectBudget =>
         {
             ProjectBudget.ConfigureByConvention();

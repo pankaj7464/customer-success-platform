@@ -246,16 +246,16 @@ public class PlatformModule : AbpModule
             // Policies for creating individual resources
             options.AddPolicy(PolicyName.ProjectBudgetCreatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "project-budget");
+                policy.RequireRole("admin", "auditor");
             });
 
             options.AddPolicy(PolicyName.ProjectBudgetUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "project-budget");
+                policy.RequireRole("admin", "auditor");
             });
             options.AddPolicy(PolicyName.ProjectBudgetDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "project-budget");
+                policy.RequireRole("admin", "auditor");
             });
 
 
@@ -263,15 +263,15 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.SprintCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "sprint");
+            policy.RequireRole("admin", "auditor");
         });
             options.AddPolicy(PolicyName.SprintUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "sprint");
+                policy.RequireRole("admin", "auditor");
             });
             options.AddPolicy(PolicyName.SprintDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "sprint");
+                policy.RequireRole("admin", "auditor");
             });
 
             //Version History Policy
@@ -279,18 +279,18 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.VersionHistoryCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "version-history");
+            policy.RequireRole("admin", "auditor");
         });
 
             options.AddPolicy(PolicyName.VersionHistoryUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "version-history");
+                policy.RequireRole("admin", "auditor");
             });
 
 
             options.AddPolicy(PolicyName.VersionHistoryDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "version-history");
+                policy.RequireRole("admin", "auditor");
             });
 
 
@@ -298,36 +298,36 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.AuditHistoryCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "audit-history");
+            policy.RequireRole("admin", "auditor");
         });
 
 
             options.AddPolicy(PolicyName.AuditHistoryUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "audit-history");
+                policy.RequireRole("admin", "auditor");
             });
 
 
             options.AddPolicy(PolicyName.AuditHistoryDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "audit-history");
+                policy.RequireRole("admin", "auditor");
             });
 
             //Client Feedback Delete Plolicy
 
             options.AddPolicy(PolicyName.ClientFeedbackCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "client-feedback");
+            policy.RequireRole("admin", "auditor");
         });
 
 
             options.AddPolicy(PolicyName.ClientFeedbackUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "client-feedback");
+                policy.RequireRole("admin", "auditor");
             });
             options.AddPolicy(PolicyName.ClientFeedbackDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "client-feedback");
+                policy.RequireRole("admin", "auditor");
             });
 
 
@@ -335,17 +335,17 @@ public class PlatformModule : AbpModule
             //Minite meeting policy
             options.AddPolicy(PolicyName.MinuteMeetingCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "minute-meeting");
+            policy.RequireRole("admin", "auditor");
         });
 
             options.AddPolicy(PolicyName.MinuteMeetingUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "minute-meeting");
+                policy.RequireRole("admin", "auditor");
             });
 
             options.AddPolicy(PolicyName.MinuteMeetingDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "minute-meeting");
+                policy.RequireRole("admin", "auditor");
             });
 
 
@@ -353,17 +353,17 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.RiskProfileCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "risk-profile");
+            policy.RequireRole("admin", "auditor");
         });
             options.AddPolicy(PolicyName.RiskProfileUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "risk-profile");
+                policy.RequireRole("admin", "auditor");
             });
 
 
             options.AddPolicy(PolicyName.RiskProfileDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "risk-profile");
+                policy.RequireRole("admin", "auditor");
             });
 
             //Resource Policy
@@ -371,15 +371,15 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.ResourceCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "resource");
+            policy.RequireRole("admin", "auditor");
         });
             options.AddPolicy(PolicyName.ResourceUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "resource");
+                policy.RequireRole("admin", "auditor");
             });
             options.AddPolicy(PolicyName.ResourceDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "resource");
+                policy.RequireRole("admin", "auditor");
             });
 
 
@@ -387,16 +387,16 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.StakeholderCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "stakeholder");
+            policy.RequireRole("admin", "auditor");
         });
             options.AddPolicy(PolicyName.StakeholderUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "stakeholder");
+                policy.RequireRole("admin", "auditor");
             });
 
             options.AddPolicy(PolicyName.StakeholderDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "stakeholder");
+                policy.RequireRole("admin", "auditor");
             });
 
 
@@ -404,18 +404,18 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.EscalationMatrixCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "auditor", "escalation-matrix");
+            policy.RequireRole("admin", "auditor");
         });
 
             options.AddPolicy(PolicyName.EscalationMatrixUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "escalation-matrix");
+                policy.RequireRole("admin", "auditor");
             });
 
 
             options.AddPolicy(PolicyName.EscalationMatrixDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "escalation-matrix");
+                policy.RequireRole("admin", "auditor");
             });
 
             //ApprovedTeam Policy
@@ -425,12 +425,12 @@ public class PlatformModule : AbpModule
         });
             options.AddPolicy(PolicyName.ApproveTeamUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "approve-team");
+                policy.RequireRole("admin", "auditor");
             });
 
             options.AddPolicy(PolicyName.ApproveTeamDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "auditor", "approve-team");
+                policy.RequireRole("admin", "auditor");
             });
         });
     }

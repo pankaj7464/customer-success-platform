@@ -17,7 +17,7 @@ namespace Promact.CustomerSuccess.Platform.Services.PhaseMilestones
                                 IPhaseMilestoneService
     {
         private readonly IEmailService _emailService;
-        private readonly string Useremail; 
+        private readonly string Useremail;
         private readonly string Username;
         IRepository<PhaseMilestone, Guid> _phaseMilestoneRepository;
         public PhaseMilestoneService(IRepository<PhaseMilestone, Guid> repository, IEmailService emailService) : base(repository)
@@ -35,10 +35,10 @@ namespace Promact.CustomerSuccess.Platform.Services.PhaseMilestones
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Phase Milestone Created alert",
-                Body="Phase milestone Created Plase check ",
+                Body = "Phase milestone Created Plase check ",
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return phaseMilestoneDto;
         }
@@ -52,7 +52,7 @@ namespace Promact.CustomerSuccess.Platform.Services.PhaseMilestones
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Phase milestone Updated alert",
-                Body ="Phase mile stone updated please check",
+                Body = "Phase mile stone updated please check",
                 ProjectId = projectId,
             };
             await _emailService.SendEmailToStakeHolder(projectDetail);
@@ -63,14 +63,14 @@ namespace Promact.CustomerSuccess.Platform.Services.PhaseMilestones
         public override async Task DeleteAsync(Guid id)
         {
 
-            var phaseMilestone= await _phaseMilestoneRepository.GetAsync(id);
+            var phaseMilestone = await _phaseMilestoneRepository.GetAsync(id);
 
             var projectId = phaseMilestone.ProjectId;
 
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Approved Team Created alert",
-                Body ="Phase milestone deleted !",
+                Body = "Phase milestone deleted !",
                 ProjectId = projectId,
             };
             await _emailService.SendEmailToStakeHolder(projectDetail);

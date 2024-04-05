@@ -1,18 +1,11 @@
-﻿using Auth0.ManagementApi;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+﻿
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Volo.Abp.Application.Services;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
 
 
@@ -81,7 +74,6 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
     }
     public class TokenResponse
     {
-        public object Name { get; set; }
         public string token { get; set; }
         public string Message { get; set; }
         public object Data { get; internal set; }

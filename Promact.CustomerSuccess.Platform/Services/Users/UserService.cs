@@ -1,41 +1,37 @@
 ﻿
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth.Auth;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
-using Promact.CustomerSuccess.Platform.Services.Uttils;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Domain.Repositories;
-using static Volo.Abp.UI.Navigation.DefaultMenuNames.Application;
+using Volo.Abp.DependencyInjection;
+using Volo.Abp.Identity;
 
 namespace Promact.CustomerSuccess.Platform.Services.Users
 {
 
-    public class UserService :  CrudAppService<User, UserDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateUserDto, CreateUpdateUserDto>, IUserService
+    public class UserService : IUserService, IScopedDependency
     {
-        private readonly IRepository<User, Guid> _userRepository;
+        private readonly IdentityUserManager _userManager;
+        private readonly IdentityRoleManager _roleManager;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
-        IEmailService _emailService;
-        IUttilService _uttilService;
+        private readonly string password = "Welcome@123";
 
         public UserService(
-            IRepository<User, Guid> userRepository,
-            IUttilService uttilService,
+            IdentityUserManager userManager,
+            IdentityRoleManager roleManager,
             IConfiguration configuration,
             IEmailService emailService,
-            IMapper mapper):base(userRepository)
-
+            IMapper mapper)
         {
-            _uttilService = uttilService;
-            _userRepository = userRepository;
+            _roleManager = roleManager;
+            _userManager = userManager;
             _configuration = configuration;
             _emailService = emailService;
             _mapper = mapper;
@@ -43,80 +39,106 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
 
 
 
-
-
-        public override async Task<UserDto> CreateAsync(CreateUpdateUserDto input)
+        public async Task<UserDto> CreateAsync(CreateUpdateUserDto input)
         {
-            try
+            // Check if a user with the same email already exists
+            var existingUser = await _userManager.FindByEmailAsync(input.Email);
+            if (existingUser != null)
             {
-                // Attempt to create the user
-                var isCreated = await _uttilService.CreateUserAsync(input);
-                if (isCreated)
+                // User with the same email already exists
+                throw new Exception("User with this email already exists.");
+            }
+
+            // User does not exist, proceed with creating a new user
+            var user = _mapper.Map<Volo.Abp.Identity.IdentityUser>(input);
+            var result = await _userManager.CreateAsync(user, password);
+
+            if (result.Succeeded)
+            {
+
+                
+                var role = await _roleManager.FindByNameAsync("Client");
+
+                if (role != null)
                 {
-                    // If user creation is successful, call the base method to create the user
-                    var createdUser = await base.CreateAsync(input);
-                    if (createdUser != null)
-                    {
-                        // Prepare and send the user confirmation email
-                        var userConfirmationEmail = new EmailDto
-                        {
-                            To = input.Email,
-                            Subject = "Welcome to our platform!",
-                            Body = Template.GenerateConfirmationEmail(input.UserName, input.Email, _configuration["App:SelfUrl"])
-                        };
-                        await _emailService.SendEmail(userConfirmationEmail);
 
-                        // Prepare and send the admin notification email
-                        // Assuming admin.Email is correctly defined or retrieved
-                        //var adminNotificationEmail = new EmailDto
-                        //{
-                        //    To = admin.Email, // Ensure admin.Email is correctly defined
-                        //    Subject = "New User registered",
-                        //    Body = $"A new user has registered with the email: {input.Email}. Please verify them if valid."
-                        //};
-                        //await _emailService.SendEmail(adminNotificationEmail);
-
-                        // Return the created user
-                        return createdUser;
-                    }
-                    else
-                    {
-                        // Handle the case where the base method fails to create the user
-                        // This could involve logging the failure or throwing an exception
-                        return null;
-                    }
+                await _userManager.AddToRoleAsync(user, "Client");
                 }
                 else
                 {
-                    // Handle the case where user creation fails
-                    // This could involve logging the failure or throwing an exception
-                    return null;
+                    var clientRole = new Volo.Abp.Identity.IdentityRole(Guid.NewGuid(),"Client");
+                    var createRoleResult = await _roleManager.CreateAsync(clientRole);
+                    await _userManager.AddToRoleAsync(user,"Client");
                 }
+
+                // Send confirmation email
+                var userConfirmationEmail = new EmailDto
+                {
+                    To = input.Email,
+                    Subject = "Welcome to our platform!",
+                    Body = Template.GenerateConfirmationEmail(input.UserName, input.Email, _configuration["App:SelfUrl"])
+                };
+                await _emailService.SendEmail(userConfirmationEmail);
+
+                return _mapper.Map<UserDto>(user);
             }
-            catch (Exception ex)
+            else
             {
-                // Log the exception or handle it as appropriate for your application
-                // This could involve logging the exception or rethrowing it
-                throw; // Rethrow the exception or handle it differently
+                // Handle error
+                // You can check result.Errors for details on why the creation failed
+                throw new Exception("Failed to create user.");
             }
         }
 
-        public override async Task<PagedResultDto<UserDto>> GetListAsync(PagedAndSortedResultRequestDto input)
+        public async Task<UserDto> UpdateAsync(Guid id, CreateUpdateUserDto input)
         {
-            var userDtos = new List<UserDto>();
+            var user = await _userManager.FindByIdAsync(id.ToString());
 
-           var users =await _uttilService.GetAllUsersAsync();
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
 
-            return new PagedResultDto<UserDto>(userDtos.Count, userDtos);
+            _mapper.Map(input, user);
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return _mapper.Map<UserDto>(user);
+            }
+            else
+            {
+                // Handle error
+                // You can check result.Errors for details on why the update failed
+                throw new Exception("Failed to update user.");
+            }
         }
 
-    }
+        public async Task DeleteAsync(Guid id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
 
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+
+            if (!result.Succeeded)
+            {
+                // Handle error
+                // You can check result.Errors for details on why the deletion failed
+                throw new Exception("Failed to delete user.");
+            }
+        }
+    }
 
     public class Response
     {
         public string message { get; set; }
         public UserDto User { get; set; }
-        public int? IsSuccess { get; set; }  = 0;
+        public int? IsSuccess { get; set; } = 0;
     }
 }

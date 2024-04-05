@@ -5,6 +5,7 @@ using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
 
 
 
@@ -20,10 +21,10 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
                                 IVersionHistoryService
     {
         private readonly IEmailService _emailService;
-        private readonly IRepository<VersionHistory,Guid> _repository;
-        private readonly IRepository<User,Guid> _userRepository;
+        private readonly IRepository<VersionHistory, Guid> _repository;
+        private readonly IRepository<IdentityUser, Guid> _userRepository;
 
-        public VersionHistoryService(IRepository<VersionHistory, Guid> repository, IEmailService emailService, IRepository<User, Guid> userRepository) : base(repository)
+        public VersionHistoryService(IRepository<VersionHistory, Guid> repository, IEmailService emailService, IRepository<IdentityUser, Guid> userRepository) : base(repository)
         {
             _emailService = emailService;
             _repository = repository;
@@ -79,7 +80,7 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
             // Fetch version histories for the specified projectId
             var versionHistories = await _repository.GetListAsync(vh => vh.ProjectId == projectId);
 
-           
+
 
             // Map version histories to DTOs
             var versionHistoryDtos = ObjectMapper.Map<List<VersionHistory>, List<VersionHistoryDto>>(versionHistories);
@@ -102,7 +103,7 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
                     {
                         versionHistory.Creater = user;
                     }
-                    
+
                 }
             }
 

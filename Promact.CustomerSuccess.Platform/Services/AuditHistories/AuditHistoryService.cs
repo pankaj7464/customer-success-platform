@@ -7,6 +7,7 @@ using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
 
 namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
 {
@@ -21,10 +22,10 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
                        IAuditHistoryService
     {
         private readonly IEmailService _emailService;
-        private readonly IRepository<User, Guid> _userRepository;
+        private readonly IRepository<IdentityUser, Guid> _userRepository;
         private readonly IRepository<AuditHistory, Guid> _auditHistoryRepository;
 
-        public AuditHistoryService(IRepository<AuditHistory, Guid> auditHistoryRepository, IEmailService emailService, IRepository<User, Guid> userRepository)
+        public AuditHistoryService(IRepository<AuditHistory, Guid> auditHistoryRepository, IEmailService emailService, IRepository<IdentityUser, Guid> userRepository)
             : base(auditHistoryRepository)
         {
             _emailService = emailService;
@@ -46,7 +47,7 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
                 ProjectId = projectId,
             };
             await _emailService.SendEmailToStakeHolder(projectDetail);
-         
+
 
             return auditHistoryDto;
         }
@@ -61,7 +62,7 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
             var projectDetail = new EmailToStakeHolderDto
             {
                 Subject = "Audit Created alert",
-                Body = Template.GetAuditHistoryEmailBody(auditHistoryDto,"Updated"),
+                Body = Template.GetAuditHistoryEmailBody(auditHistoryDto, "Updated"),
                 ProjectId = projectId,
 
             };

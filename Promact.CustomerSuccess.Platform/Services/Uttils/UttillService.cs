@@ -1,16 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Promact.CustomerSuccess.Platform.Entities;
+using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
-using Volo.Abp.Users;
-using static Volo.Abp.Identity.Settings.IdentitySettingNames;
-using static Volo.Abp.UI.Navigation.DefaultMenuNames.Application;
+using Volo.Abp.Identity;
 
 namespace Promact.CustomerSuccess.Platform.Services.Uttils
 {
@@ -18,34 +14,46 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly IdentityUserManager _userManager;
 
-        public UttillService(IConfiguration configuration, HttpClient httpClient)
+        public UttillService(IConfiguration configuration, HttpClient httpClient, IdentityUserManager userManager)
         {
-            
+
+            _userManager = userManager;
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Auth0:Access_token"]);
 
         }
 
-        public async Task<IEnumerable<string>> GetRolesFromUrlAsync(string userId)
+
+
+        public async Task<UserWithRolesDto> GetUserByEmailAsync(string email)
         {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_configuration["Auth0:Domain"]}/api/v2/users/{userId}/roles");
-                response.EnsureSuccessStatusCode();
+            // Find the user by email
+            var user = await _userManager.FindByEmailAsync(email);
 
-                var content = await response.Content.ReadAsStringAsync();
-                var roles = JsonConvert.DeserializeObject<List<RoleDto>>(content);
-
-                return roles.Select(r => r.Name);
-            }
-            catch (Exception ex)
+            if (user == null)
             {
-                // Log or handle the exception
-                return Enumerable.Empty<string>();
+                // User with the provided email does not exist
+                throw new Exception("User not found.");
             }
+
+            // Retrieve roles associated with the user
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Map user and roles to DTO
+            var userWithRolesDto = new UserWithRolesDto
+            {
+                UserId = user.Id.ToString(),
+                Email = user.Email,
+                UserName = user.UserName,
+                Roles = roles.ToList() // Convert roles to a list
+            };
+
+            return userWithRolesDto;
         }
+
 
         public async Task<bool> CreateUserAsync(CreateUpdateUserDto userDto)
         {
@@ -55,9 +63,9 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
                 var userData = new
                 {
                     name = userDto.Name,
-                    email=userDto.Email,
+                    email = userDto.Email,
                     password = _configuration["Auth0:DefaultPassword"],
-                    connection = "Username-Password-Authentication"                                                
+                    connection = "Username-Password-Authentication"
                 };
 
                 // Serialize user data to JSON
@@ -148,6 +156,8 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
             }
         }
 
-     
+
     }
+
+
 }

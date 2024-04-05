@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Identity;
 
 namespace Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory
 {
@@ -17,7 +18,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory
         public string ApprovedBy { get; set; }
         public required Guid ProjectId { get; set; }
 
-        public User Creater {  get; set; }
+        public IdentityUser Creater { get; set; }
         public Guid Id { get; set; }
 
     }

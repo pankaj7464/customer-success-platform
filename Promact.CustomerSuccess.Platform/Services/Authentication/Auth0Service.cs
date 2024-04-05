@@ -5,107 +5,85 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Promact.CustomerSuccess.Platform.Entities;
+using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Volo.Abp.Application.Services;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
 
 
 namespace Promact.CustomerSuccess.Platform.Services.Auth0
 {
-    public class Auth0Service : ApplicationService, IAuth0Service
+    public class Auth0Service :  IAuth0Service,IScopedDependency
     {
-        private readonly IManagementConnection _managementConnection;
         private readonly IConfiguration _configuration;
-        private readonly HttpClient _httpClient;
-        private readonly ICurrentUser _currentUser;
-        private readonly IUttilService _UttilService;
-        public Auth0Service(IConfiguration configuration, HttpClient httpClient, ICurrentUser currentUser , IUttilService uttilService)
+        private readonly IUttilService _uttilService;
+        public Auth0Service(IConfiguration configuration, HttpClient httpClient, ICurrentUser currentUser, IUttilService uttilService)
         {
-            _httpClient = httpClient;
-            _currentUser = currentUser;
-            _UttilService = uttilService;
+            _uttilService = uttilService;
             _configuration = configuration;
         }
 
-        public async Task<string> ExchangeToken(string token)
+        public async Task<TokenResponse> ExchangeToken(string token)
         {
             // Decode the JWT token
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtToken = tokenHandler.ReadJwtToken(token);
 
             // Extract user details and roles
-            var UserId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-            if (UserId != null)
+            var email = jwtToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
+            if (email != null)
             {
-                var role =await _UttilService.GetRolesFromUrlAsync(UserId);
-                var claim = CreateClaims(UserId, role);
-                var jwt_token = await GenerateJwtTokenAsync(claim);
-                return jwt_token;
+                var user = await _uttilService.GetUserByEmailAsync(email);
+                if (user != null)
+                {
+                    var jwt_token = GenerateJwtToken(user);
+                    return new TokenResponse { token = jwt_token, Data = user };
+                }
+                else new TokenResponse { Message = "You are not registered user", };
             }
 
-            return "something went wrong";
+            return new TokenResponse { Message = "Not valid token", };
 
         }
 
-        /// <summary>
-        /// Generates a JWT token for the specified user with the provided claims.
-        /// </summary>
-        /// <returns>
-        /// Returns JWT token as a string.
-        /// </returns>
-        private async Task<string> GenerateJwtTokenAsync(IEnumerable<Claim> claims)
+        private string GenerateJwtToken(UserWithRolesDto user)
         {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            // Create symmetric security key
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
+            var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
 
-            // Create signing credentials
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            // Create token descriptor
-            var tokenDescriptor = new SecurityTokenDescriptor
+            foreach (var role in user.Roles)
             {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(1), // Token expiry time
-                SigningCredentials = creds
-            };
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
-            // Create token handler
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(54),
+                signingCredentials: credentials
+            );
+
             var tokenHandler = new JwtSecurityTokenHandler();
-
-            // Generate token
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            // Return token as string
             return tokenHandler.WriteToken(token);
         }
 
-        /// <summary>
-        /// Creates claims for a user, including user ID, email, username, email verification status, and roles.
-        /// </summary>
-        /// <returns>
-        /// Returns a collection of claims containing user information and roles.
-        /// </returns>
-        private static IEnumerable<Claim> CreateClaims(string userId, IEnumerable<string> roles)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(AbpClaimTypes.UserId, userId),
-
-            };
-
-
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(AbpClaimTypes.Role, role));
-            }
-
-            return claims;
-        }
-
+    }
+    public class TokenResponse
+    {
+        public object Name { get; set; }
+        public string token { get; set; }
+        public string Message { get; set; }
+        public object Data { get; internal set; }
     }
 }

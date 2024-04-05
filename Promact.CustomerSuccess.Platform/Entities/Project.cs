@@ -9,8 +9,8 @@ namespace Promact.CustomerSuccess.Platform.Entities
         public required string Name { get; set; }
         public required string Description { get; set; }
         // Foreign key for ABP user
-        [ForeignKey("User")]
+        [ForeignKey("IdentityUser")]
         public Guid ManagerId { get; set; }
-        public virtual User User { get; set; }
+        public virtual IdentityUser User { get; set; }
     }
 }

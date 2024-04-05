@@ -9,6 +9,7 @@ using System.Linq;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
 
 namespace Promact.CustomerSuccess.Platform.Services
 {
@@ -24,19 +25,19 @@ namespace Promact.CustomerSuccess.Platform.Services
                                 IProjectService
     {
         private readonly IEmailService _emailService;
-        
-        private readonly IRepository<Project,Guid> _projectRepository;
-        private readonly IRepository<Stakeholder,Guid> _stakeholderRepository;
-        private readonly IRepository<User,Guid> _userRepository;
-        public ProjectService(IRepository<Project, Guid> projectRepository,IEmailService emailService,
-            IRepository<Stakeholder, Guid> stakeholderRepository,IRepository<User, Guid> userRepository) : base(projectRepository)
+
+        private readonly IRepository<Project, Guid> _projectRepository;
+        private readonly IRepository<Stakeholder, Guid> _stakeholderRepository;
+        private readonly IRepository<IdentityUser, Guid> _userRepository;
+        public ProjectService(IRepository<Project, Guid> projectRepository, IEmailService emailService,
+            IRepository<Stakeholder, Guid> stakeholderRepository, IRepository<IdentityUser, Guid> userRepository) : base(projectRepository)
         {
             _emailService = emailService;
             _projectRepository = projectRepository;
             _stakeholderRepository = stakeholderRepository;
             _userRepository = userRepository;
         }
-        [Authorize(Policy=PolicyName.ProjectCreatePolicy)]
+        [Authorize(Policy = PolicyName.ProjectCreatePolicy)]
         public override async Task<ProjectDto> CreateAsync(CreateProjectDto input)
         {
             var projectDto = await base.CreateAsync(input);
@@ -46,7 +47,7 @@ namespace Promact.CustomerSuccess.Platform.Services
         [Authorize(Policy = PolicyName.ProjectDeletePolicy)]
         public override async Task<ProjectDto> UpdateAsync(Guid id, UpdateProjectDto input)
         {
-            var projectDto =  base.UpdateAsync(id, input);
+            var projectDto = base.UpdateAsync(id, input);
             return await projectDto;
         }
 
@@ -56,11 +57,11 @@ namespace Promact.CustomerSuccess.Platform.Services
             await base.DeleteAsync(id);
         }
 
-       
+
         public async override Task<PagedResultDto<ProjectDto>> GetListAsync(PagedAndSortedResultRequestDto input)
         {
             // Get the current user's ID
-            var currentUserId =Guid.NewGuid();
+            var currentUserId = Guid.NewGuid();
             List<Project> projects = new List<Project>();
             List<string> roles = new List<string>();
 
@@ -86,7 +87,7 @@ namespace Promact.CustomerSuccess.Platform.Services
                 // Fetch all stakeholders with the specified user ID
                 var user = await _userRepository.GetAsync(currentUserId);
                 var stakeholders = await _stakeholderRepository
-                    .GetListAsync(s => s.Email ==user.Email);
+                    .GetListAsync(s => s.Email == user.Email);
 
                 // Fetch projects associated with the retrieved stakeholders
                 var projectIds = stakeholders.Select(s => s.ProjectId).ToList();

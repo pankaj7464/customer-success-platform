@@ -33,7 +33,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
                 Body = Template.GenerateClientFeedbackEmailBody(clientFeedback, "Created"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return clientFeedback;
         }
@@ -50,7 +50,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
                 Body = Template.GenerateClientFeedbackEmailBody(ClientFeedbackDto, "Updated"),
                 ProjectId = projectId,
             };
-            Task.Run(() => _emailService.SendEmailToStakeHolder(projectDetail));
+           await _emailService.SendEmailToStakeHolder(projectDetail);
 
             return ClientFeedbackDto;
         }
@@ -72,7 +72,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ClientFeedbacks
                 Body = Template.GetClientFeedbackEmailBody(ObjectMapper.Map<ClientFeedback, ClientFeedbackDto>(cleintFeedback), "Deleted"),
                 ProjectId = projectId,
             };
-            await _emailService.SendEmailToStakeHolder(projectDetail));
+            await _emailService.SendEmailToStakeHolder(projectDetail);
         }
 
 

@@ -1,18 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using Promact.CustomerSuccess.Platform.Entities.Constants;
 using Volo.Abp.Domain.Entities;
 
 namespace Promact.CustomerSuccess.Platform.Entities
 {
-    public class AuditHistory:Entity<Guid>
+    public class AuditHistory : Entity<Guid>
     {
 
         public DateTime DateOfAudit { get; set; }
-        [ForeignKey("User")]
+        [ForeignKey("IdentityUser")]
         public Guid ReviewedBy { get; set; }
-        
-        public virtual User? User { get; set; }
-        public SprintStatus Status { get; set; }    
+
+        public virtual IdentityUser? User { get; set; }
+        public SprintStatus Status { get; set; }
         public string ReviewedSection { get; set; }
         public string? CommentOrQueries { get; set; }
         public string? ActionItem { get; set; }

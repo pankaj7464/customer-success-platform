@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Promact.CustomerSuccess.Platform.Constants;
 namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
 {
+    [Authorize]
     public class ApprovedTeamService : CrudAppService<ApprovedTeam, ApprovedTeamDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateApprovedTeamDto, CreateUpdateApprovedTeamDto>
     {
         private readonly IEmailService _emailService;

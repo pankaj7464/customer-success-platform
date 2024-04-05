@@ -16,6 +16,7 @@ using Promact.CustomerSuccess.Platform.Services.Dtos.RiskProfile;
 using Promact.CustomerSuccess.Platform.Services.Dtos.sprint;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Stakeholder;
 using Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory;
+using Volo.Abp.Identity;
 
 namespace Promact.CustomerSuccess.Platform.ObjectMapping;
 
@@ -45,19 +46,19 @@ public class PlatformAutoMapperProfile : Profile
         CreateMap<CreateAuditHistoryDto, AuditHistory>();
         CreateMap<UpdateAuditHistoryDto, AuditHistory>();
         CreateMap<AuditHistory, AuditHistoryDto>().ReverseMap();
-      
-        
+
+
         //Done
         CreateMap<CreateProjectBudgetDto, ProjectBudget>();
         CreateMap<UpdateProjectBudgetDto, ProjectBudget>();
-        CreateMap<ProjectBudget, ProjectBudgetDto>().ReverseMap(); 
-        
+        CreateMap<ProjectBudget, ProjectBudgetDto>().ReverseMap();
+
         //Done
         CreateMap<CreateEscalationMatrix, EscalationMatrix>();
         CreateMap<UpdateEscalationMatrix, EscalationMatrix>();
         CreateMap<EscalationMatrix, EscalationMatrixDto>().ReverseMap();
-        
-        
+
+
         //Done
         CreateMap<CreateRiskProfileDto, RiskProfile>();
         CreateMap<UpdateRiskProfileDto, RiskProfile>();
@@ -68,7 +69,7 @@ public class PlatformAutoMapperProfile : Profile
         CreateMap<CreateSprintDto, Sprint>();
         CreateMap<UpdateSprintDto, Sprint>();
         CreateMap<Sprint, SprintDto>().ReverseMap();
-        
+
         //Done
         CreateMap<CreatePhaseMilestoneDto, PhaseMilestone>();
         CreateMap<UpdatePhaseMilestoneDto, PhaseMilestone>();
@@ -80,12 +81,12 @@ public class PlatformAutoMapperProfile : Profile
         CreateMap<CreateUpdateProjectResourceDto, ProjectResources>();
         CreateMap<CreateUpdateProjectResourceDto, ProjectResources>();
         CreateMap<ProjectResources, ProjectResourcesDto>().ReverseMap();
-        
+
         //Pending
         CreateMap<CreateUpdateMeetingMinuteDto, MeetingMinute>();
         CreateMap<CreateUpdateMeetingMinuteDto, MeetingMinute>();
         CreateMap<MeetingMinute, MeetingMinuteDto>().ReverseMap();
-        
+
         //Pending
         CreateMap<CreateUpdateApprovedTeamDto, ApprovedTeam>();
         CreateMap<CreateUpdateApprovedTeamDto, ApprovedTeam>();
@@ -95,17 +96,17 @@ public class PlatformAutoMapperProfile : Profile
         CreateMap<CreateUpdateProjectUpdateDto, ProjectUpdate>();
         CreateMap<CreateUpdateProjectUpdateDto, ProjectUpdate>();
         CreateMap<ProjectUpdate, ProjectUpdateDto>().ReverseMap();
-        
+
         //Pending
         CreateMap<CreateUpdateCLientFeedback, ClientFeedback>();
         CreateMap<CreateUpdateCLientFeedback, ClientFeedback>();
         CreateMap<ClientFeedback, ClientFeedbackDto>().ReverseMap();
 
 
-          //Pending
-        CreateMap<CreateUpdateUserDto, User>();
-        CreateMap<CreateUpdateUserDto, User>();
-        CreateMap<User, UserDto>().ReverseMap();
+        //Pending
+        CreateMap<CreateUpdateUserDto, IdentityUser>();
+        CreateMap<CreateUpdateUserDto, IdentityUser>();
+        CreateMap<IdentityUser, UserDto>().ReverseMap();
 
 
 

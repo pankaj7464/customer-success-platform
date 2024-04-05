@@ -58,6 +58,9 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
+using NUglify;
+using Promact.CustomerSuccess.Platform.Entities;
+using Autofac.Core;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -109,7 +112,7 @@ namespace Promact.CustomerSuccess.Platform;
     typeof(AbpSettingManagementHttpApiModule)
 )]
 [DependsOn(typeof(AbpEmailingModule))]
-    public class PlatformModule : AbpModule
+public class PlatformModule : AbpModule
 {
     /* Single point to enable/disable multi-tenancy */
     private const bool IsMultiTenant = true;
@@ -167,14 +170,16 @@ namespace Promact.CustomerSuccess.Platform;
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
-        context.Services.AddScoped<IUttilService,UttillService>();
-      
+        context.Services.AddScoped<IUttilService, UttillService>();
+
 
         if (hostingEnvironment.IsDevelopment())
         {
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
-
         }
+
+        ConfigureAuthentication(context);
+
 
         context.Services.AddAuthentication(options =>
         {
@@ -182,21 +187,20 @@ namespace Promact.CustomerSuccess.Platform;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
 
-           .AddJwtBearer(options =>
-           {
+         .AddJwtBearer(options =>
+         {
 
-               options.RequireHttpsMetadata = false;
-               options.SaveToken = true;
-               options.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateIssuerSigningKey = true,
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["jwt:key"])),
-                   ValidateIssuer = false,
-                   ValidateAudience = false
-               };
-           });
+             options.RequireHttpsMetadata = false;
+             options.SaveToken = true;
+             options.TokenValidationParameters = new TokenValidationParameters
+             {
 
-        ConfigureAuthentication(context);
+                 ValidateIssuerSigningKey = true,
+                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["jwt:Key"])),
+                 ValidateIssuer = false,
+                 ValidateAudience = false
+             };
+         });
         ConfigureAuthorization(context);
         ConfigureBundles();
         ConfigureMultiTenancy();
@@ -225,155 +229,205 @@ namespace Promact.CustomerSuccess.Platform;
     {
         context.Services.AddAuthorization(options =>
         {
-        // Project policies
-        options.AddPolicy(PolicyName.ProjectCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor");
-        });
-        options.AddPolicy(PolicyName.ProjectUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor");
-        });
-        options.AddPolicy(PolicyName.ProjectDeletePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor");
-        });
+            // Project policies
+            options.AddPolicy(PolicyName.ProjectCreatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor");
+            });
+            options.AddPolicy(PolicyName.ProjectUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor");
+            });
+            options.AddPolicy(PolicyName.ProjectDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor");
+            });
 
-        // Policies for creating individual resources
-        options.AddPolicy(PolicyName.ProjectBudgetCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "project-budget");
-        });
+            // Policies for creating individual resources
+            options.AddPolicy(PolicyName.ProjectBudgetCreatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "project-budget");
+            });
 
-        options.AddPolicy(PolicyName.SprintCreatePolicy, policy =>
+            options.AddPolicy(PolicyName.ProjectBudgetUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "project-budget");
+            });
+            options.AddPolicy(PolicyName.ProjectBudgetDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "project-budget");
+            });
+
+
+            //Sprint Policies
+
+            options.AddPolicy(PolicyName.SprintCreatePolicy, policy =>
         {
             policy.RequireRole("admin", "auditor", "sprint");
         });
-        options.AddPolicy(PolicyName.VersionHistoryCreatePolicy, policy =>
+            options.AddPolicy(PolicyName.SprintUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "sprint");
+            });
+            options.AddPolicy(PolicyName.SprintDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "sprint");
+            });
+
+            //Version History Policy
+
+
+            options.AddPolicy(PolicyName.VersionHistoryCreatePolicy, policy =>
         {
             policy.RequireRole("admin", "auditor", "version-history");
         });
-        options.AddPolicy(PolicyName.AuditHistoryCreatePolicy, policy =>
+
+            options.AddPolicy(PolicyName.VersionHistoryUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "version-history");
+            });
+
+
+            options.AddPolicy(PolicyName.VersionHistoryDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "version-history");
+            });
+
+
+            //Audit History Policy
+
+            options.AddPolicy(PolicyName.AuditHistoryCreatePolicy, policy =>
         {
             policy.RequireRole("admin", "auditor", "audit-history");
         });
-        options.AddPolicy(PolicyName.ClientFeedbackCreatePolicy, policy =>
+
+
+            options.AddPolicy(PolicyName.AuditHistoryUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "audit-history");
+            });
+
+
+            options.AddPolicy(PolicyName.AuditHistoryDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "audit-history");
+            });
+
+            //Client Feedback Delete Plolicy
+
+            options.AddPolicy(PolicyName.ClientFeedbackCreatePolicy, policy =>
         {
             policy.RequireRole("admin", "auditor", "client-feedback");
         });
-        options.AddPolicy(PolicyName.MinuteMeetingCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "minute-meeting");
-        });
-        options.AddPolicy(PolicyName.RiskProfileCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "risk-profile");
-        });
-        options.AddPolicy(PolicyName.ResourceCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "resource");
-        });
-        options.AddPolicy(PolicyName.StakeholderCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "stakeholder");
-        });
-        options.AddPolicy(PolicyName.EscalationMatrixCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "escalation-matrix");
-        });
-        options.AddPolicy(PolicyName.ApproveTeamCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "approve-team");
-        });
 
-        // Policies for updating individual resources
-        options.AddPolicy(PolicyName.ProjectBudgetUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "project-budget");
-        });
-        options.AddPolicy(PolicyName.SprintUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "sprint");
-        });
-        options.AddPolicy(PolicyName.VersionHistoryUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "version-history");
-        });
-        options.AddPolicy(PolicyName.AuditHistoryUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "audit-history");
-        });
-        options.AddPolicy(PolicyName.ClientFeedbackUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "client-feedback");
-        });
-        options.AddPolicy(PolicyName.MinuteMeetingUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "minute-meeting");
-        });
-        options.AddPolicy(PolicyName.RiskProfileUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "risk-profile");
-        });
-        options.AddPolicy(PolicyName.ResourceUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "resource");
-        });
-        options.AddPolicy(PolicyName.StakeholderUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "stakeholder");
-        });
-        options.AddPolicy(PolicyName.EscalationMatrixUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "escalation-matrix");
-        });
-        options.AddPolicy(PolicyName.ApproveTeamUpdatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "approve-team");
-        });
 
-        // Policies for deleting individual resources
-        options.AddPolicy(PolicyName.ProjectBudgetDeletePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "project-budget");
-        });
-        options.AddPolicy(PolicyName.SprintDeletePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "sprint");
-        });
-        options.AddPolicy(PolicyName.VersionHistoryDeletePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "version-history");
-        });
-        options.AddPolicy(PolicyName.AuditHistoryDeletePolicy, policy =>
-        {
-            policy.RequireRole("admin", "auditor", "audit-history");
-        });  
-            // Policies for deleting individual resources (continued)
+            options.AddPolicy(PolicyName.ClientFeedbackUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "client-feedback");
+            });
             options.AddPolicy(PolicyName.ClientFeedbackDeletePolicy, policy =>
             {
                 policy.RequireRole("admin", "auditor", "client-feedback");
             });
+
+
+
+            //Minite meeting policy
+            options.AddPolicy(PolicyName.MinuteMeetingCreatePolicy, policy =>
+        {
+            policy.RequireRole("admin", "auditor", "minute-meeting");
+        });
+
+            options.AddPolicy(PolicyName.MinuteMeetingUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "minute-meeting");
+            });
+
             options.AddPolicy(PolicyName.MinuteMeetingDeletePolicy, policy =>
             {
                 policy.RequireRole("admin", "auditor", "minute-meeting");
             });
+
+
+            //Policy for Risk profile
+
+            options.AddPolicy(PolicyName.RiskProfileCreatePolicy, policy =>
+        {
+            policy.RequireRole("admin", "auditor", "risk-profile");
+        });
+            options.AddPolicy(PolicyName.RiskProfileUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "risk-profile");
+            });
+
+
             options.AddPolicy(PolicyName.RiskProfileDeletePolicy, policy =>
             {
                 policy.RequireRole("admin", "auditor", "risk-profile");
+            });
+
+            //Resource Policy
+
+
+            options.AddPolicy(PolicyName.ResourceCreatePolicy, policy =>
+        {
+            policy.RequireRole("admin", "auditor", "resource");
+        });
+            options.AddPolicy(PolicyName.ResourceUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "resource");
             });
             options.AddPolicy(PolicyName.ResourceDeletePolicy, policy =>
             {
                 policy.RequireRole("admin", "auditor", "resource");
             });
+
+
+            //Stakeholder Policy
+
+            options.AddPolicy(PolicyName.StakeholderCreatePolicy, policy =>
+        {
+            policy.RequireRole("admin", "auditor", "stakeholder");
+        });
+            options.AddPolicy(PolicyName.StakeholderUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "stakeholder");
+            });
+
             options.AddPolicy(PolicyName.StakeholderDeletePolicy, policy =>
             {
                 policy.RequireRole("admin", "auditor", "stakeholder");
             });
+
+
+            //EscalationMatrix Policy
+
+            options.AddPolicy(PolicyName.EscalationMatrixCreatePolicy, policy =>
+        {
+            policy.RequireRole("admin", "auditor", "escalation-matrix");
+        });
+
+            options.AddPolicy(PolicyName.EscalationMatrixUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "escalation-matrix");
+            });
+
+
             options.AddPolicy(PolicyName.EscalationMatrixDeletePolicy, policy =>
             {
                 policy.RequireRole("admin", "auditor", "escalation-matrix");
             });
+
+            //ApprovedTeam Policy
+            options.AddPolicy(PolicyName.ApproveTeamCreatePolicy, policy =>
+        {
+            policy.RequireRole("admin", "auditor", "approve-team");
+        });
+            options.AddPolicy(PolicyName.ApproveTeamUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin", "auditor", "approve-team");
+            });
+
             options.AddPolicy(PolicyName.ApproveTeamDeletePolicy, policy =>
             {
                 policy.RequireRole("admin", "auditor", "approve-team");
@@ -539,16 +593,39 @@ namespace Promact.CustomerSuccess.Platform;
             configuration["AuthServer:Authority"]!,
             new Dictionary<string, string>
             {
-                    {"Platform", "Platform API"}
+            {"Platform", "Platform API"}
             },
             options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Platform API", Version = "v1" });
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
+
+                // Define security scheme for bearer token
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer"
+                });
+
+                // Add JWT bearer token authentication requirement
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new List<string>()
+                }
+                });
             });
     }
-
 
     private void ConfigureAutoMapper(ServiceConfigurationContext context)
     {
@@ -647,7 +724,7 @@ namespace Promact.CustomerSuccess.Platform;
             }
 
         }
-        
+
         app.UseCorrelationId();
         app.UseStaticFiles();
         app.UseRouting();

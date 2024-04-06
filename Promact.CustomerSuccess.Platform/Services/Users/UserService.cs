@@ -1,9 +1,7 @@
 ﻿
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using Promact.CustomerSuccess.Platform.Entities;
+using Microsoft.EntityFrameworkCore;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth.Auth;
@@ -11,31 +9,40 @@ using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Services;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
+using Volo.Abp.Users;
 
 namespace Promact.CustomerSuccess.Platform.Services.Users
 {
-
     public class UserService : IUserService, IScopedDependency
     {
         private readonly IdentityUserManager _userManager;
         private readonly IdentityRoleManager _roleManager;
         private readonly IConfiguration _configuration;
+        private readonly IIdentityUserRepository _userRepository;
+        private readonly IIdentityRoleRepository _roleRepository;
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
-        private readonly string password = "Welcome@123";
+        private readonly string password;
 
         public UserService(
             IdentityUserManager userManager,
             IdentityRoleManager roleManager,
             IConfiguration configuration,
+                IIdentityUserRepository userRepository,
+        IIdentityRoleRepository roleRepository,
             IEmailService emailService,
+
             IMapper mapper)
         {
+            _userRepository = userRepository;
+            _roleRepository = roleRepository;
             _roleManager = roleManager;
             _userManager = userManager;
             _configuration = configuration;
             _emailService = emailService;
             _mapper = mapper;
+            password = _configuration["DefaultUserPassword"];
+
         }
 
 
@@ -58,18 +65,18 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
             {
 
 
-                var role = await _roleManager.FindByNameAsync("admin");
+                var role = await _roleManager.FindByNameAsync("client");
 
                 if (role != null)
                 {
 
-                    await _userManager.AddToRoleAsync(user, "admin");
+                    await _userManager.AddToRoleAsync(user, "client");
                 }
                 else
                 {
                     var clientRole = new Volo.Abp.Identity.IdentityRole(Guid.NewGuid(), "admin");
                     var createRoleResult = await _roleManager.CreateAsync(clientRole);
-                    await _userManager.AddToRoleAsync(user, "admin");
+                    await _userManager.AddToRoleAsync(user, "client");
                 }
 
                 // Send confirmation email
@@ -133,6 +140,17 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
                 // You can check result.Errors for details on why the deletion failed
                 throw new Exception("Failed to delete user.");
             }
+        }
+        public async Task<List<Volo.Abp.Identity.IdentityRole>> GetAllRolesAsync()
+        {
+            var roles =await  _roleRepository.GetListAsync();
+            return roles;
+        }
+
+        public async Task<List<Volo.Abp.Identity.IdentityUser>> GetAllUsersWithRolesAsync()
+        {
+            var users = await _userRepository.GetListAsync();
+            return users;
         }
 
 

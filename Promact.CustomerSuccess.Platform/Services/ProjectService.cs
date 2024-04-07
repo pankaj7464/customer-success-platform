@@ -10,6 +10,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Volo.Abp.Users;
 
 namespace Promact.CustomerSuccess.Platform.Services
 {
@@ -29,13 +30,17 @@ namespace Promact.CustomerSuccess.Platform.Services
         private readonly IRepository<Project, Guid> _projectRepository;
         private readonly IRepository<Stakeholder, Guid> _stakeholderRepository;
         private readonly IRepository<IdentityUser, Guid> _userRepository;
+        private readonly ICurrentUser _currentUser;
+
         public ProjectService(IRepository<Project, Guid> projectRepository, IEmailService emailService,
+            ICurrentUser currentUser,
             IRepository<Stakeholder, Guid> stakeholderRepository, IRepository<IdentityUser, Guid> userRepository) : base(projectRepository)
         {
             _emailService = emailService;
             _projectRepository = projectRepository;
             _stakeholderRepository = stakeholderRepository;
             _userRepository = userRepository;
+            _currentUser = currentUser;
         }
         [Authorize(Policy = PolicyName.ProjectCreatePolicy)]
         public override async Task<ProjectDto> CreateAsync(CreateProjectDto input)
@@ -62,25 +67,26 @@ namespace Promact.CustomerSuccess.Platform.Services
         {
             // Get the current user's ID
             var currentUserId = Guid.NewGuid();
+            var v = _currentUser;
             List<Project> projects = new List<Project>();
             List<string> roles = new List<string>();
 
             // Check if the array of roles contains a specific role
-            if (roles.Any(role => role == "Admin" || role == "Auditor"))
+            if (true)
             {
                 // Admin or Auditor can see all projects
                 var allProjects = await _projectRepository.GetListAsync();
                 projects.AddRange(allProjects);
             }
 
-            if (roles.Contains("Manager"))
+           else if (roles.Contains("Manager"))
             {
                 // Manager can see projects where they are project managers
                 var managerProjects = await _projectRepository.GetListAsync(p => p.ManagerId == currentUserId);
                 projects.AddRange(managerProjects);
             }
 
-            if (roles.Contains("Client"))
+            else if (roles.Contains("Client"))
             {
                 // Client can see projects where they are stakeholders
 

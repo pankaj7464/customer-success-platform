@@ -1,10 +1,26 @@
-﻿namespace Promact.CustomerSuccess.Platform.Constants
+﻿using Auth0.ManagementApi.Models;
+
+namespace Promact.CustomerSuccess.Platform.Constants
 {
     public class PolicyName
     {
         public const string ProjectCreatePolicy = "ProjectCreate";
         public const string ProjectUpdatePolicy = "ProjectUpdate";
         public const string ProjectDeletePolicy = "ProjectDelete";
+
+        // User Policies
+        public const string UserGetPolicy = "UserGet";
+        public const string UserCreatePolicy = "UserCreate";
+        public const string UserUpdatePolicy = "UserUpdate";
+        public const string UserDeletePolicy = "UserDelete";
+
+        // Role Policies
+        public const string RoleGetPolicy = "RoleGet";
+        public const string RoleCreatePolicy = "RoleCreate";
+        public const string RoleUpdatePolicy = "RoleUpdate";
+        public const string RoleDeletePolicy = "RoleDelete";
+        public const string AssignRolePolicy = "AssignRole";
+
 
         // Policies for creating individual resources
         public const string ProjectBudgetCreatePolicy = "ProjectBudgetCreatePolicy";
@@ -46,5 +62,5 @@
         public const string ApproveTeamDeletePolicy = "ApproveTeamDeletePolicy";
     }
 
-   
+
 }

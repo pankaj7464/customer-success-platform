@@ -243,6 +243,48 @@ public class PlatformModule : AbpModule
                 policy.RequireRole("admin", "auditor");
             });
 
+
+            // User policies
+            options.AddPolicy(PolicyName.UserGetPolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+            options.AddPolicy(PolicyName.UserCreatePolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+            options.AddPolicy(PolicyName.UserUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+            options.AddPolicy(PolicyName.UserDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+
+            // Role policies
+            options.AddPolicy(PolicyName.RoleGetPolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+            options.AddPolicy(PolicyName.RoleCreatePolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+            options.AddPolicy(PolicyName.RoleUpdatePolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+            options.AddPolicy(PolicyName.RoleDeletePolicy, policy =>
+            {
+                policy.RequireRole("admin");
+            });
+            options.AddPolicy(PolicyName.AssignRolePolicy, policy =>
+            {
+                policy.RequireRole("admin","manager");
+            });
+
+
             // Policies for creating individual resources
             options.AddPolicy(PolicyName.ProjectBudgetCreatePolicy, policy =>
             {

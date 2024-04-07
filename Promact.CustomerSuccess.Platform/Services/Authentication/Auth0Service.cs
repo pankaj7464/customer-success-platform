@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Security.Claims;
 using Volo.Abp.Users;
 
 
@@ -15,10 +16,14 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
     {
         private readonly IConfiguration _configuration;
         private readonly IUttilService _uttilService;
-        public Auth0Service(IConfiguration configuration, HttpClient httpClient, ICurrentUser currentUser, IUttilService uttilService)
+        private readonly ICurrentPrincipalAccessor _currentPrincipalAccessor;
+        public Auth0Service(IConfiguration configuration, HttpClient httpClient,
+             ICurrentPrincipalAccessor currentPrincipalAccessor,
+        ICurrentUser currentUser, IUttilService uttilService)
         {
             _uttilService = uttilService;
             _configuration = configuration;
+            _currentPrincipalAccessor = currentPrincipalAccessor;
         }
 
         public async Task<TokenResponse> ExchangeToken(string token)
@@ -66,9 +71,33 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
                 expires: DateTime.UtcNow.AddHours(54),
                 signingCredentials: credentials
             );
+            SetCurrentUser(user);
 
             var tokenHandler = new JwtSecurityTokenHandler();
             return tokenHandler.WriteToken(token);
+        }
+
+        private void SetCurrentUser(UserWithRolesDto user)
+        {
+            var claims = new List<Claim>
+        {
+            new Claim(AbpClaimTypes.UserId, user.UserId.ToString()),
+            new Claim(AbpClaimTypes.UserName, user.UserName),
+            new Claim(AbpClaimTypes.Email, user.Email)
+        };
+
+            foreach (var role in user.Roles)
+            {
+                claims.Add(new Claim(AbpClaimTypes.Role, role));
+            }
+
+            var identity = new ClaimsIdentity(claims, "Bearer");
+            var principal = new ClaimsPrincipal(identity);
+
+            using (_currentPrincipalAccessor.Change(principal))
+            {
+                
+            }
         }
 
     }

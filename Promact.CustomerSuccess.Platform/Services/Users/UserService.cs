@@ -29,10 +29,9 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
             IdentityUserManager userManager,
             IdentityRoleManager roleManager,
             IConfiguration configuration,
-                IIdentityUserRepository userRepository,
-        IIdentityRoleRepository roleRepository,
+            IIdentityUserRepository userRepository,
+            IIdentityRoleRepository roleRepository,
             IEmailService emailService,
-
             IMapper mapper)
         {
             _userRepository = userRepository;

@@ -76,7 +76,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             return body;
         }
 
-        public static string GetAuditHistoryEmailBody(AuditHistoryDto auditHistory,string action)
+        public static string GetAuditHistoryEmailBody(AuditHistoryDto auditHistory, string action)
         {
             string body = $@"
 <!DOCTYPE html>
@@ -173,7 +173,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             return body;
         }
 
-        public static string GenerateMeetingMinutesEmailBody(MeetingMinuteDto meetingMinute,string action)
+        public static string GenerateMeetingMinutesEmailBody(MeetingMinuteDto meetingMinute, string action)
         {
             // HTML template for the email body
             string body = $@"
@@ -208,7 +208,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
 
             return body;
         }
-        public static string GenerateClientFeedbackEmailBody(ClientFeedbackDto feedback,string action)
+        public static string GenerateClientFeedbackEmailBody(ClientFeedbackDto feedback, string action)
         {
             // HTML template for the email body
             string body = $@"
@@ -269,7 +269,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             return body;
         }
 
-        public static string GenerateProjectBudgetEmailBody(ProjectBudgetDto projectBudget,string action)
+        public static string GenerateProjectBudgetEmailBody(ProjectBudgetDto projectBudget, string action)
         {
             // HTML template for the email body
             string body = $@"
@@ -341,8 +341,9 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
 
             return body;
         }
-        public static string GenerateProjectResourceEmailBody(ProjectResourcesDto projectResource,string action)
+        public static string GenerateProjectResourceEmailBody(ProjectResourcesDto projectResource, string action)
         {
+
             // HTML template for the email body
             string body = $@"
     <!DOCTYPE html>
@@ -379,7 +380,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             return body;
         }
 
-        public static string GetProjectUpdateEmailBody(ProjectUpdateDto projectUpdate,string action)
+        public static string GetProjectUpdateEmailBody(ProjectUpdateDto projectUpdate, string action)
         {
             string body = $@"
 <!DOCTYPE html>
@@ -413,7 +414,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
         }
 
 
-        public static string GetSprintEmailBody(SprintDto sprint,string action)
+        public static string GetSprintEmailBody(SprintDto sprint, string action)
         {
             string body = $@"
 <!DOCTYPE html>
@@ -454,7 +455,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             return body;
         }
 
-        public static string GetStakeholderEmailBody(StakeholderDto stakeholder,string action)
+        public static string GetStakeholderEmailBody(StakeholderDto stakeholder, string action)
         {
             string body = $@"
 <!DOCTYPE html>
@@ -488,7 +489,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
 
             return body;
         }
-        public static string GenerateConfirmationEmail( string userName, string userEmail, string confirmationLink)
+        public static string GenerateConfirmationEmail(string userName, string userEmail, string confirmationLink)
         {
             string body = $@"
         <!DOCTYPE html>

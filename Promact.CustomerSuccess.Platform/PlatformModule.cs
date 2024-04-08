@@ -52,15 +52,11 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-using Volo.Abp.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
-using NUglify;
-using Promact.CustomerSuccess.Platform.Entities;
-using Autofac.Core;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -201,6 +197,7 @@ public class PlatformModule : AbpModule
                  ValidateAudience = false
              };
          });
+
         ConfigureAuthorization(context);
         ConfigureBundles();
         ConfigureMultiTenancy();
@@ -214,6 +211,7 @@ public class PlatformModule : AbpModule
         ConfigureDataProtection(context);
         ConfigureEfCore(context);
     }
+
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)
     {

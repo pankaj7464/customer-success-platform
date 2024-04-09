@@ -12,7 +12,7 @@ using Volo.Abp.Users;
 
 namespace Promact.CustomerSuccess.Platform.Services.Auth0
 {
-    public class Auth0Service :  IAuth0Service,IScopedDependency
+    public class Auth0Service : IAuth0Service, IScopedDependency
     {
         private readonly IConfiguration _configuration;
         private readonly IUttilService _uttilService;
@@ -51,53 +51,31 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
 
         private string GenerateJwtToken(UserWithRolesDto user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var securityKey = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+            var tokenHandler = new JwtSecurityTokenHandler();
 
             var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Email, user.Email)
-        };
+ {
+     new Claim(ClaimTypes.NameIdentifier, user.UserId),
+     new Claim(ClaimTypes.Name, user.UserName),
+     new Claim(ClaimTypes.Email, user.Email)
+ };
+
 
             foreach (var role in user.Roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(54),
-                signingCredentials: credentials
-            );
-            SetCurrentUser(user);
-
-            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(securityKey), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
-        }
 
-        private void SetCurrentUser(UserWithRolesDto user)
-        {
-            var claims = new List<Claim>
-        {
-            new Claim(AbpClaimTypes.UserId, user.UserId.ToString()),
-            new Claim(AbpClaimTypes.UserName, user.UserName),
-            new Claim(AbpClaimTypes.Email, user.Email)
-        };
-
-            foreach (var role in user.Roles)
-            {
-                claims.Add(new Claim(AbpClaimTypes.Role, role));
-            }
-
-            var identity = new ClaimsIdentity(claims, "Bearer");
-            var principal = new ClaimsPrincipal(identity);
-
-            using (_currentPrincipalAccessor.Change(principal))
-            {
-                
-            }
         }
 
     }

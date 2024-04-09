@@ -6,6 +6,7 @@ using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Project;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using System.Linq;
+using System.Security.Claims;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -30,15 +31,18 @@ namespace Promact.CustomerSuccess.Platform.Services
         private readonly IRepository<Project, Guid> _projectRepository;
         private readonly IRepository<Stakeholder, Guid> _stakeholderRepository;
         private readonly IRepository<IdentityUser, Guid> _userRepository;
+        private readonly IHttpContextAccessor _contextAccessor;
         private readonly ICurrentUser _currentUser;
 
         public ProjectService(IRepository<Project, Guid> projectRepository, IEmailService emailService,
             ICurrentUser currentUser,
+            IHttpContextAccessor httpContextAccessor,
             IRepository<Stakeholder, Guid> stakeholderRepository, IRepository<IdentityUser, Guid> userRepository) : base(projectRepository)
         {
             _emailService = emailService;
             _projectRepository = projectRepository;
             _stakeholderRepository = stakeholderRepository;
+            _contextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _currentUser = currentUser;
         }
@@ -65,51 +69,72 @@ namespace Promact.CustomerSuccess.Platform.Services
 
         public async override Task<PagedResultDto<ProjectDto>> GetListAsync(PagedAndSortedResultRequestDto input)
         {
-            // Get the current user's ID
-            var currentUserId = Guid.NewGuid();
-            var v = _currentUser;
-            List<Project> projects = new List<Project>();
-            List<string> roles = new List<string>();
+            var user = _contextAccessor.HttpContext.User;
+            var currentUserId = Guid.NewGuid(); // Assuming default value if user ID is not available
+            var projects = new List<ProjectDto>();
 
-            // Check if the array of roles contains a specific role
-            if (true)
+            if (user.Identity.IsAuthenticated)
             {
-                // Admin or Auditor can see all projects
-                var allProjects = await _projectRepository.GetListAsync();
-                projects.AddRange(allProjects);
+                var roles = new List<string>();
+
+                var roleClaim = user.FindFirst(ClaimTypes.Role);
+
+                if (roleClaim != null)
+                {
+                    var role = roleClaim.Value.ToLower();
+
+                    // Add the current role to the list
+                    roles.Add(role);
+
+                    // Retrieve other roles
+                    var otherClaims = user.FindAll(ClaimTypes.Role);
+
+                    foreach (var claim in otherClaims)
+                    {
+                        var otherRole = claim.Value.ToLower();
+                        // Add other roles to the list if they are not already added
+                        if (!roles.Contains(otherRole))
+                        {
+                            roles.Add(otherRole);
+                        }
+                    }
+
+                    // Now, roles list contains all roles the user belongs to
+                    // You can perform data filtering based on roles
+
+                    if (roles.Contains("admin") || roles.Contains("auditor"))
+                    {
+                        // Return all data for admin or auditor
+                        var allProjects = await _projectRepository.GetListAsync();
+                        projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(allProjects));
+                    }
+                    else if (roles.Contains("manager"))
+                    {
+                        // Return manager data
+                        var managerProjects = await _projectRepository.GetListAsync(p => p.ManagerId == currentUserId);
+                        projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(managerProjects));
+                    }
+                    else if (roles.Contains("client"))
+                    {
+                        // Return client-specific data
+                        var emailClaim = user.FindFirst(ClaimTypes.Email);
+                        if (emailClaim != null)
+                        {
+                            var email = emailClaim.Value;
+                            var stakeholders = await _stakeholderRepository.GetListAsync(s => s.Email == email);
+                            var projectIds = stakeholders.Select(s => s.ProjectId).ToList();
+                            var clientProjects = await _projectRepository.GetListAsync(p => projectIds.Contains(p.Id));
+                            projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(clientProjects));
+                        }
+                    }
+                }
             }
-
-           else if (roles.Contains("Manager"))
-            {
-                // Manager can see projects where they are project managers
-                var managerProjects = await _projectRepository.GetListAsync(p => p.ManagerId == currentUserId);
-                projects.AddRange(managerProjects);
-            }
-
-            else if (roles.Contains("Client"))
-            {
-                // Client can see projects where they are stakeholders
-
-                // Fetch all stakeholders with the specified user ID
-                var user = await _userRepository.GetAsync(currentUserId);
-                var stakeholders = await _stakeholderRepository
-                    .GetListAsync(s => s.Email == user.Email);
-
-                // Fetch projects associated with the retrieved stakeholders
-                var projectIds = stakeholders.Select(s => s.ProjectId).ToList();
-                var clientProjects = await _projectRepository
-                    .GetListAsync(p => projectIds.Contains(p.Id));
-                projects.AddRange(clientProjects);
-            }
-
-            // Map the fetched entities to DTOs
-            var projectDtos = ObjectMapper.Map<List<Project>, List<ProjectDto>>(projects);
 
             // Return the paged result
             return new PagedResultDto<ProjectDto>
             {
                 TotalCount = projects.Count,
-                Items = projectDtos
+                Items = projects
             };
         }
 

@@ -117,6 +117,7 @@ public class PlatformModule : AbpModule
     {
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
+        context.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
         context.Services.AddScoped<IEmailService, EmailService>();
         context.Services.AddHttpClient();
         context.Services.PreConfigure<AbpMvcDataAnnotationsLocalizationOptions>(options =>

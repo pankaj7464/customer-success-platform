@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    networks:
+      - keycloak_network
+
+  keycloak:
+    image: jboss/keycloak:latest
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - keycloak_network
+
+volumes:
+  postgres_data:
+
+networks:
+  keycloak_network:
+    name: keycloak_network

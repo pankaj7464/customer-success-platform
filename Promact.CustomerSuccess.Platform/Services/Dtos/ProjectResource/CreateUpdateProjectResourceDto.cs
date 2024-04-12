@@ -4,8 +4,8 @@
     {
         public Guid ProjectId { get; set; }
         public double AllocationPercentage { get; set; }
-        public DateTime StartData { get; set; }
+        public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public required string Role { get; set; }
+        public Guid RoleId { get; set; }
     }
 }

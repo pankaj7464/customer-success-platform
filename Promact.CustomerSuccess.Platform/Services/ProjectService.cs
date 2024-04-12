@@ -1,9 +1,11 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Project;
+using Promact.CustomerSuccess.Platform.Services.Dtos.Stakeholder;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using System.Linq;
 using System.Security.Claims;
@@ -11,6 +13,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Volo.Abp.ObjectMapping;
 using Volo.Abp.Users;
 
 namespace Promact.CustomerSuccess.Platform.Services
@@ -121,8 +124,13 @@ namespace Promact.CustomerSuccess.Platform.Services
                         if (emailClaim != null)
                         {
                             var email = emailClaim.Value;
-                            var stakeholders = await _stakeholderRepository.GetListAsync(s => s.Email == email);
-                            var projectIds = stakeholders.Select(s => s.ProjectId).ToList();
+                            var queryable = await _stakeholderRepository.GetQueryableAsync();
+                            var stakeholder = await queryable.Include(s => s.User).ToListAsync();
+
+                            var stakeholderDto = ObjectMapper.Map<List<Stakeholder>, List<StakeholderDto>>(stakeholder);
+                            var sDto = stakeholderDto.Where(s => s.User.Email == email);
+
+                            var projectIds = sDto.Select(s => s.ProjectId).ToList();
                             var clientProjects = await _projectRepository.GetListAsync(p => projectIds.Contains(p.Id));
                             projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(clientProjects));
                         }

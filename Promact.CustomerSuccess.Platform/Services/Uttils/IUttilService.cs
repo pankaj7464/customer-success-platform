@@ -5,12 +5,12 @@ using Volo.Abp.DependencyInjection;
 
 namespace Promact.CustomerSuccess.Platform.Services.Uttils
 {
-    public interface IUttilService:IScopedDependency
+    public interface IUttilService : IScopedDependency
     {
         Task<bool> CreateUserAsync(CreateUpdateUserDto userDto);
         Task<bool> UpdateUserAsync(CreateUpdateUserDto userDto);
         Task<bool> DeleteUserAsync(string userId);
-        Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        Task<IEnumerable<UserWithRoleDto>> GetAllUsersAsync();
         Task<UserWithRolesDto> GetUserByEmailAsync(string email);
     }
 }

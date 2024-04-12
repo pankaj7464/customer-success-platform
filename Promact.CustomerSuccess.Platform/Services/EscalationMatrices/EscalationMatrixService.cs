@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Entities;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.EscalationMatrix;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
@@ -20,16 +20,12 @@ namespace Promact.CustomerSuccess.Platform.Services.EscalationMatrices
                                 IEscalationMatrixService
     {
         private readonly IEmailService _emailService;
-        private readonly string Useremail ; 
-        private readonly string Username ;
         IRepository<EscalationMatrix, Guid> _escalationMatrixRepository;
         public EscalationMatrixService(IRepository<EscalationMatrix, Guid> escalationMatrixRepository, IEmailService emailService)
             : base(escalationMatrixRepository)
         {
             _emailService = emailService;
             _escalationMatrixRepository = escalationMatrixRepository;
-
-
         }
 
 
@@ -38,7 +34,7 @@ namespace Promact.CustomerSuccess.Platform.Services.EscalationMatrices
         {
             var escalationMatrixDto = await base.CreateAsync(input);
 
-            
+
             var projectId = input.ProjectId;
 
             var projectDetail = new EmailToStakeHolderDto
@@ -71,7 +67,7 @@ namespace Promact.CustomerSuccess.Platform.Services.EscalationMatrices
         [Authorize(Policy = PolicyName.EscalationMatrixDeletePolicy)]
         public override async Task DeleteAsync(Guid id)
         {
-            var escalation =await base.GetAsync(id);
+            var escalation = await base.GetAsync(id);
 
             var projectId = escalation.ProjectId;
 
@@ -82,14 +78,17 @@ namespace Promact.CustomerSuccess.Platform.Services.EscalationMatrices
                 Body = "Escalation matrix Deleted please check !"
             };
             await _emailService.SendEmailToStakeHolder(projectDetail);
-
-
             await base.DeleteAsync(id);
         }
 
-        public async Task<List<EscalationMatrix>> GetEscalationmatricesByProjectIdAsync(Guid projectId)
+        public async Task<List<EscalationMatrixDto>> GetEscalationmatricesByProjectIdAsync(Guid projectId)
         {
-            return await _escalationMatrixRepository.GetListAsync(ah => ah.ProjectId == projectId);
+
+            var queryable = await _escalationMatrixRepository.GetQueryableAsync();
+            var escalation = await queryable
+                .Where(ah => ah.ProjectId == projectId)
+                .Include(es => es.ResponsiblePerson).ToListAsync();
+            return ObjectMapper.Map<List<EscalationMatrix>, List<EscalationMatrixDto>>(escalation);
         }
 
     }

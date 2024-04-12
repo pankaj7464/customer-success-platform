@@ -2,9 +2,8 @@
 {
     public class CreateStakeholderDto
     {
-        public string Title { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
+        public Guid RoleId { get; set; }
+        public Guid UserId { get; set; }
         public Guid ProjectId { get; set; }
     }
 }

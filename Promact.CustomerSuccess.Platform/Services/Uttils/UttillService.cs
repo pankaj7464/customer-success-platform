@@ -97,7 +97,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
         {
             try
             {
-               
+
                 return true;
             }
             catch (Exception ex)
@@ -124,7 +124,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
             }
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserWithRoleDto>> GetAllUsersAsync()
         {
             try
             {
@@ -132,7 +132,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Uttils
                 response.EnsureSuccessStatusCode();
 
                 var content = await response.Content.ReadAsStringAsync();
-                var users = JsonConvert.DeserializeObject<List<UserDto>>(content);
+                var users = JsonConvert.DeserializeObject<List<UserWithRoleDto>>(content);
 
                 return users;
             }

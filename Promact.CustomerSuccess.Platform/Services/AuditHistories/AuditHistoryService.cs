@@ -1,7 +1,10 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Entities;
+using Promact.CustomerSuccess.Platform.Services.Dtos;
+using Promact.CustomerSuccess.Platform.Services.Dtos.ApprovedTeam;
 using Promact.CustomerSuccess.Platform.Services.Dtos.AuditHistory;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
@@ -22,7 +25,6 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
                        IAuditHistoryService
     {
         private readonly IEmailService _emailService;
-        private readonly IRepository<IdentityUser, Guid> _userRepository;
         private readonly IRepository<AuditHistory, Guid> _auditHistoryRepository;
 
         public AuditHistoryService(IRepository<AuditHistory, Guid> auditHistoryRepository, IEmailService emailService, IRepository<IdentityUser, Guid> userRepository)
@@ -30,7 +32,6 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
         {
             _emailService = emailService;
             _auditHistoryRepository = auditHistoryRepository;
-            _userRepository = userRepository;
         }
 
         [Authorize(Policy = PolicyName.AuditHistoryCreatePolicy)]
@@ -95,37 +96,28 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
         }
         public async Task<List<AuditHistoryDto>> GetAuditHistoriesByProjectIdAsync(Guid projectId)
         {
-
-            // Fetch all users
-            var users = await _userRepository.GetListAsync();
-
-            // Fetch version histories for the specified projectId
-            var auditHistories = await _auditHistoryRepository.GetListAsync(vh => vh.ProjectId == projectId);
-
-
-
-            // Map version histories to DTOs
-            var auditHistoryDtos = ObjectMapper.Map<List<AuditHistory>, List<AuditHistoryDto>>(auditHistories);
-
-            // If version histories exist and there are users
-            if (auditHistoryDtos != null && users != null)
-            {
-                // Create a dictionary for faster lookup
-                var userDictionary = users.ToDictionary(u => u.Id);
-
-                // Iterate through each version history
-                foreach (var auditHistoryDto in auditHistoryDtos)
+            var queryable = await _auditHistoryRepository.GetQueryableAsync();
+            var auditHistories = await queryable
+                .Where(a => a.ProjectId == projectId)
+                .Include(a => a.Reviewer)
+                .Select(a => new AuditHistoryDto
                 {
-                    // Find the user associated with the version history's ReviewedBy property
-                    if (userDictionary.TryGetValue(auditHistoryDto.ReviewedBy, out var user))
+                    Id = a.Id,
+                    DateOfAudit = a.DateOfAudit,
+                    Status = a.Status,
+                    ReviewedSection = a.ReviewedSection,
+                    CommentOrQueries = a.CommentOrQueries,
+                    ActionItem = a.ActionItem,
+                    Reviewer = new UserDto
                     {
-                        auditHistoryDto.ReviewedByUser = user;
+                        Name = a.Reviewer.Name,
+                        Id = a.Reviewer.Id,
                     }
-                }
-            }
+                }).ToListAsync();
 
-            return auditHistoryDtos;
+            return auditHistories;
         }
+
 
 
     }

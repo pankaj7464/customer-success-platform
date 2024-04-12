@@ -5,6 +5,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Promact.CustomerSuccess.Platform.Services.Dtos.ProjectResource;
+using Microsoft.EntityFrameworkCore;
 
 namespace Promact.CustomerSuccess.Platform.Services.Resource
 {
@@ -83,7 +84,9 @@ namespace Promact.CustomerSuccess.Platform.Services.Resource
 
         public async Task<List<ProjectResourcesDto>> GetResourcesByProjectIdAsync(Guid projectId)
         {
-            var resources = await _resourceRepository.GetListAsync(r => r.ProjectId == projectId);
+            var queryable = await _resourceRepository.GetQueryableAsync();
+            var resources = await queryable.Where(x => x.ProjectId == projectId)
+                 .Include(pr => pr.Role).ToListAsync();
             return ObjectMapper.Map<List<ProjectResources>, List<ProjectResourcesDto>>(resources);
         }
     }

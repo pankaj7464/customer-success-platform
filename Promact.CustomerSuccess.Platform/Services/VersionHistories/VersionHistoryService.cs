@@ -1,15 +1,11 @@
-﻿using Promact.CustomerSuccess.Platform.Entities;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
+﻿using Microsoft.EntityFrameworkCore;
+using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
-
-
-
-
 namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
 {
     public class VersionHistoryService : CrudAppService<VersionHistory,
@@ -21,13 +17,13 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
                                 IVersionHistoryService
     {
         private readonly IEmailService _emailService;
-        private readonly IRepository<VersionHistory, Guid> _repository;
+        private readonly IRepository<VersionHistory, Guid> _versionHistoryRepository;
         private readonly IRepository<IdentityUser, Guid> _userRepository;
 
         public VersionHistoryService(IRepository<VersionHistory, Guid> repository, IEmailService emailService, IRepository<IdentityUser, Guid> userRepository) : base(repository)
         {
             _emailService = emailService;
-            _repository = repository;
+            _versionHistoryRepository = repository;
             _userRepository = userRepository;
         }
 
@@ -60,7 +56,7 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
         {
             // Send email notification
 
-            var versionHistory = await _repository.GetAsync(id);
+            var versionHistory = await _versionHistoryRepository.GetAsync(id);
             var projectId = versionHistory.ProjectId;
 
             var projectDetail = new EmailToStakeHolderDto
@@ -74,41 +70,11 @@ namespace Promact.CustomerSuccess.Platform.Services.VersionHistories
         }
         public async Task<List<VersionHistoryDto>> GetVersionHistoriesByProjectIdAsync(Guid projectId)
         {
-            // Fetch all users
-            var users = await _userRepository.GetListAsync();
-
-            // Fetch version histories for the specified projectId
-            var versionHistories = await _repository.GetListAsync(vh => vh.ProjectId == projectId);
-
-
-
-            // Map version histories to DTOs
-            var versionHistoryDtos = ObjectMapper.Map<List<VersionHistory>, List<VersionHistoryDto>>(versionHistories);
-
-            // If version histories exist
-            // Assuming versionHistoryDtos is a collection of VersionHistoryDto objects
-            // and users is a collection of ApplicationUser objects
-
-            // If version histories exist
-            if (versionHistoryDtos != null)
-            {
-                // Create a dictionary for quick lookup of users by their Id
-                var userDictionary = users.ToDictionary(u => u.Id);
-
-                // Iterate through each version history
-                foreach (var versionHistory in versionHistoryDtos)
-                {
-                    // Use the dictionary to find the user associated with the version history's CreatedBy property
-                    if (userDictionary.TryGetValue(versionHistory.CreatedBy, out var user))
-                    {
-                        versionHistory.Creater = user;
-                    }
-
-                }
-            }
-
-
-            return versionHistoryDtos;
+            var queryable = await _versionHistoryRepository.GetQueryableAsync();
+            var versionHistories = await queryable.Where(v => v.ProjectId == projectId)
+                .Include(v => v.ApprovedBy)
+                .Include(v => v.CreatedBy).ToListAsync();
+            return ObjectMapper.Map<List<VersionHistory>, List<VersionHistoryDto>>(versionHistories);
         }
 
     }

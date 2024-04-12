@@ -1,6 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Promact.CustomerSuccess.Platform.Entities.Constants;
 using Volo.Abp.Domain.Entities.Auditing;
-using Volo.Abp.Identity;
 
 namespace Promact.CustomerSuccess.Platform.Entities
 {
@@ -8,7 +7,7 @@ namespace Promact.CustomerSuccess.Platform.Entities
     {
         public required string Name { get; set; }
         public required string Description { get; set; }
-
+        public ProjectStatus status { get; set; }
         public Guid ManagerId { get; set; }
     }
 }

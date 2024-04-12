@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Promact.CustomerSuccess.Platform.Entities;
+using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.ApprovedTeam;
 using Promact.CustomerSuccess.Platform.Services.Dtos.AuditHistory;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
@@ -17,6 +18,7 @@ using Promact.CustomerSuccess.Platform.Services.Dtos.sprint;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Stakeholder;
 using Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory;
 using Volo.Abp.Identity;
+using RoleDto = Promact.CustomerSuccess.Platform.Services.Dtos.RoleDto;
 
 namespace Promact.CustomerSuccess.Platform.ObjectMapping;
 
@@ -33,13 +35,19 @@ public class PlatformAutoMapperProfile : Profile
         //Done
         CreateMap<CreateStakeholderDto, Stakeholder>();
         CreateMap<UpdateStakeholderDto, Stakeholder>();
-        CreateMap<Stakeholder, StakeholderDto>().ReverseMap();
+        CreateMap<Stakeholder, StakeholderDto>().ReverseMap()
+       .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
+       .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+
 
 
         //Done
         CreateMap<CreateVersionHistoryDto, VersionHistory>();
         CreateMap<UpdateVersionHistoryDto, VersionHistory>();
-        CreateMap<VersionHistory, VersionHistoryDto>().ReverseMap();
+        CreateMap<VersionHistory, VersionHistoryDto>().ReverseMap()
+       .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+       .ForMember(dest => dest.ApprovedBy, opt => opt.MapFrom(src => src.ApprovedBy));
+
 
 
         //Done
@@ -106,8 +114,12 @@ public class PlatformAutoMapperProfile : Profile
         //Pending
         CreateMap<CreateUpdateUserDto, IdentityUser>();
         CreateMap<CreateUpdateUserDto, IdentityUser>();
-        CreateMap<IdentityUser, UserDto>().ReverseMap();
+        CreateMap<IdentityUser, UserWithRoleDto>().ReverseMap();
 
+
+
+        CreateMap<IdentityUser, UserDto>().ReverseMap();
+        CreateMap<IdentityRole, RoleDto>().ReverseMap();
 
 
 

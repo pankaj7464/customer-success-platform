@@ -6,6 +6,11 @@ using Volo.Abp.Domain.Repositories;
 using Promact.CustomerSuccess.Platform.Services.Dtos.ApprovedTeam;
 using Microsoft.AspNetCore.Authorization;
 using Promact.CustomerSuccess.Platform.Constants;
+using Microsoft.EntityFrameworkCore;
+using Volo.Abp.ObjectMapping;
+using System.Collections.Generic;
+using System.Linq;
+using Promact.CustomerSuccess.Platform.Services.Dtos;
 namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
 {
     [Authorize]
@@ -76,13 +81,33 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
             };
             await _emailService.SendEmailToStakeHolder(projectDetail);
         }
-
-
         public async Task<List<ApprovedTeamDto>> GetApprovedTeamsByProjectIdAsync(Guid projectId)
         {
-            var approvedTeams = await _approvedTeamRepository.GetListAsync(t => t.ProjectId == projectId);
-            return ObjectMapper.Map<List<ApprovedTeam>, List<ApprovedTeamDto>>(approvedTeams);
+            var queryable = await _approvedTeamRepository.GetQueryableAsync();
+            var approvedTeams = await queryable
+                .Where(t => t.ProjectId == projectId)
+                .Include(t => t.Role)
+                .Select(t => new ApprovedTeamDto
+                {
+                    Id = t.Id,
+                    NoOfResources = t.NoOfResources,
+                    PhaseNo = t.PhaseNo,
+                    Role = new RoleDto
+                    {
+                        Id = t.Role.Id,
+                        Name = t.Role.Name
+                    },
+                    Duration = t.Duration,
+                    Availability = t.Availability,
+                    ProjectId = t.ProjectId
+                })
+                .ToListAsync();
+
+            return approvedTeams;
         }
+
+
+
 
     }
 }

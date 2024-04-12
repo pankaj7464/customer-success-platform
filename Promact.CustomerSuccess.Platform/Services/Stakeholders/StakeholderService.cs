@@ -1,4 +1,6 @@
-﻿using Promact.CustomerSuccess.Platform.Entities;
+﻿using Auth0.ManagementApi.Models;
+using Microsoft.EntityFrameworkCore;
+using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Stakeholder;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Volo.Abp.Application.Dtos;
@@ -81,7 +83,13 @@ namespace Promact.CustomerSuccess.Platform.Services.Stakeholders
 
         public async Task<List<StakeholderDto>> GetStakeholdersByProjectIdAsync(Guid projectId)
         {
-            var stakeholders = await _stakeholderRepository.GetListAsync(s => s.ProjectId == projectId);
+            var queryable = await _stakeholderRepository.GetQueryableAsync();
+            var stakeholders = await queryable.Where(s => s.ProjectId == projectId)
+                .Include(s => s.Role)
+                .Include(s => s.User)
+                .ToListAsync();
+
+
             return ObjectMapper.Map<List<Stakeholder>, List<StakeholderDto>>(stakeholders);
         }
     }

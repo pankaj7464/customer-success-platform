@@ -79,63 +79,63 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
         public static string GetAuditHistoryEmailBody(AuditHistoryDto auditHistory, string action)
         {
             string body = $@"
-<!DOCTYPE html>
-<html lang=""en"">
-<head>
-    <meta charset=""UTF-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <title>Audit History</title>
-    <style>
-        /* CSS styles can be added here to style the email content */
-        body {{
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-        }}
+            <!DOCTYPE html>
+            <html lang=""en"">
+            <head>
+                <meta charset=""UTF-8"">
+                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                <title>Audit History</title>
+                <style>
+                   
+                    body {{
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                    }}
 
-        .container {{
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }}
+                    .container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                    }}
 
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-        }}
+                    table {{
+                        width: 100%;
+                        border-collapse: collapse;
+                    }}
 
-        th, td {{
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }}
-    </style>
-</head>
-<body>
-    <div class=""container"">
-        <h2>Audit History</h2>
-        <table>
-            <tr>
-                <th>Date Of Audit</th>
-                <th>Reviewed By</th>
-                <th>Status</th>
-                <th>Reviewed Section</th>
-                <th>Comment or Queries</th>
-                <th>Action Item</th>
-            </tr>
-            <tr>
-                <td>{auditHistory.DateOfAudit}</td>
-                <td>{auditHistory.ReviewedBy}</td>
-                <td>{auditHistory.Status}</td>
-                <td>{auditHistory.ReviewedSection}</td>
-                <td>{auditHistory.CommentOrQueries}</td>
-                <td>{auditHistory.ActionItem}</td>
-            </tr>
-        </table>
-    </div>
-</body>
-</html>";
+                    th, td {{
+                        padding: 8px;
+                        text-align: left;
+                        border-bottom: 1px solid #ddd;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class=""container"">
+                    <h2>Audit History</h2>
+                    <table>
+                        <tr>
+                            <th>Date Of Audit</th>
+                            <th>Reviewed By</th>
+                            <th>Status</th>
+                            <th>Reviewed Section</th>
+                            <th>Comment or Queries</th>
+                            <th>Action Item</th>
+                        </tr>
+                        <tr>
+                            <td>{auditHistory.DateOfAudit}</td>
+                            <td>{auditHistory.Reviewer?.Name}</td>
+                            <td>{auditHistory.Status}</td>
+                            <td>{auditHistory.ReviewedSection}</td>
+                            <td>{auditHistory.CommentOrQueries}</td>
+                            <td>{auditHistory.ActionItem}</td>
+                        </tr>
+                    </table>
+                </div>
+            </body>
+            </html>";
 
             return body;
         }
@@ -367,8 +367,8 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
                 </tr>
                 <tr>
                     <td>{projectResource.AllocationPercentage}</td>
-                    <td>{projectResource.Start}</td>
-                    <td>{projectResource.End}</td>
+                    <td>{projectResource.StartDate}</td>
+                    <td>{projectResource.EndDate}</td>
                     <td>{projectResource.Role}</td>
                 </tr>
                 
@@ -477,9 +477,9 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
           
             </tr>
             <tr>
-                <td>{stakeholder.Title}</td>
-                <td>{stakeholder.Name}</td>
-                <td>{stakeholder.Email}</td>
+                <td>{stakeholder.Role?.Name}</td>
+                <td>{stakeholder.User?.Name}</td>
+                <td>{stakeholder.User?.Email}</td>
                
             </tr>
         </table>

@@ -19,7 +19,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             _stakeholderRepository = stakeholderRepository;
         }
 
-      public async Task SendEmailToStakeHolder(EmailToStakeHolderDto request)
+        public async Task SendEmailToStakeHolder(EmailToStakeHolderDto request)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
 
                 foreach (var stakeholder in stakeholders)
                 {
-                    email.To.Add(MailboxAddress.Parse(stakeholder.Email));
+                    email.To.Add(MailboxAddress.Parse(stakeholder.User?.Email));
                     email.Body = new TextPart(TextFormat.Html)
                     {
                         Text = request.Body,
@@ -38,7 +38,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
                 }
                 email.Subject = request.Subject;
                 await SendEmailToMultipleReciever(email);
-            
+
             }
             catch (Exception ex) { }
         }
@@ -59,7 +59,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
                     client.Authenticate(username, password);
                     client.Send(email);
                     client.Disconnect(true);
-      
+
                 }
 
             }
@@ -119,6 +119,6 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
 
         }
 
-       
+
     }
 }

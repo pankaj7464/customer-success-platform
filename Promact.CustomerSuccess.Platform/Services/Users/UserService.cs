@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using AutoMapper.Internal.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Promact.CustomerSuccess.Platform.Constants;
@@ -192,12 +193,12 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
         public async Task<Response> GetAllUsersWithRolesAsync()
         {
             var users = await _userRepository.GetListAsync();
-            var userRoles = new List<UserDto>();
+            var userRoles = new List<UserWithRoleDto>();
 
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
-                userRoles.Add(new UserDto
+                userRoles.Add(new UserWithRoleDto
                 {
                     Id = user.Id,
                     Name = user.Name,
@@ -207,6 +208,15 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
                 });
             }
             return new Response { IsSuccess = true, message = "Fetched successfully", data = userRoles };
+        }
+
+        [Authorize(Policy = PolicyName.UserGetPolicy)]
+        public async Task<Response> GetAllUsersAsync()
+        {
+            var users = await _userRepository.GetListAsync();
+
+            var u = _mapper.Map<List<IdentityUser>, List<UserDto>>(users);
+            return new Response { IsSuccess = true, message = "Fetched successfully", data = u };
         }
 
         [Authorize(Policy = PolicyName.RoleCreatePolicy)]
@@ -316,6 +326,8 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
             }
             return new Response { message = "Deleted successfully." };
         }
+
+
 
 
     }

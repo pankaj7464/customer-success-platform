@@ -7,7 +7,6 @@ using Promact.CustomerSuccess.Platform.Data;
 using Promact.CustomerSuccess.Platform.Localization;
 using OpenIddict.Validation.AspNetCore;
 using Volo.Abp;
-using Volo.Abp.Uow;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.MultiTenancy;
@@ -48,6 +47,8 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
+using Volo.Abp.AspNetCore.Authentication.OpenIdConnect;
+using Autofac.Core;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -149,7 +150,7 @@ public class PlatformModule : AbpModule
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
         }
 
-        ConfigureAuthentication(context);
+        ConfigureAuthentication(context, configuration);
         ConfigureBundles();
         ConfigureMultiTenancy();
         ConfigureUrls(configuration);
@@ -163,9 +164,52 @@ public class PlatformModule : AbpModule
         ConfigureEfCore(context);
     }
 
-    private void ConfigureAuthentication(ServiceConfigurationContext context)
+    private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
     {
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        context.Services.AddAuthentication()
+            .AddJwtBearer(options =>
+            {
+                options.Authority = configuration["AuthServer:Authority"];
+                options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
+                options.Audience = "KeycloakDemo";
+            })
+            .AddAbpOpenIdConnect(options =>
+            {
+                options.Authority = configuration["AuthServer:Authority"];
+
+                options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
+                options.ResponseType = OpenIdConnectResponseType.Code;
+                options.UsePkce = true;
+                options.SaveTokens = true;
+                options.GetClaimsFromUserInfoEndpoint = true;
+
+                options.ClientId = configuration["AuthServer:ClientId"];
+
+                //options.Scope.Add("role");
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+                options.Scope.Add("phone");
+
+                /*
+                 * What I've done here will be built-in with ABP v5.3.0 (then we can delete the following code)
+                 * https://github.com/abpframework/abp/pull/12085
+                 */
+
+                if (AbpClaimTypes.Name != "given_name")
+                {
+                    options.ClaimActions.MapJsonKey(AbpClaimTypes.Name, "given_name");
+                    options.ClaimActions.DeleteClaim("given_name");
+                    options.ClaimActions.RemoveDuplicate(AbpClaimTypes.Name);
+                }
+
+                if (AbpClaimTypes.SurName != "family_name")
+                {
+                    options.ClaimActions.MapJsonKey(AbpClaimTypes.SurName, "family_name");
+                    options.ClaimActions.DeleteClaim("family_name");
+                    options.ClaimActions.RemoveDuplicate(AbpClaimTypes.SurName);
+                }
+            });
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;

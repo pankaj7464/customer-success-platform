@@ -56,7 +56,7 @@ namespace Promact.CustomerSuccess.Platform.Services
             return projectDto;
         }
 
-        [Authorize(Policy = PolicyName.ProjectDeletePolicy)]
+        [Authorize(Policy = PolicyName.ProjectUpdatePolicy)]
         public override async Task<ProjectDto> UpdateAsync(Guid id, UpdateProjectDto input)
         {
             var projectDto = base.UpdateAsync(id, input);

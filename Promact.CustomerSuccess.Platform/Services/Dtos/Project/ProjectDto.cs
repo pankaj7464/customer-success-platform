@@ -1,4 +1,5 @@
 ﻿
+using Promact.CustomerSuccess.Platform.Entities.Constants;
 using Volo.Abp.Application.Dtos;
 
 namespace Promact.CustomerSuccess.Platform.Services.Dtos.Project
@@ -8,6 +9,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Dtos.Project
         public Guid Id { get; set; }
         public required string Name { get; set; }
         public required string Description { get; set; }
+        public ProjectStatus status { get; set; }
         public required Guid ManagerId { get; set; }
     }
 }

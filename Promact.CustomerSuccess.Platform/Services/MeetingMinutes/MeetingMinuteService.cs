@@ -8,7 +8,8 @@ using Volo.Abp.Domain.Repositories;
 
 namespace Promact.CustomerSuccess.Platform.Services.MeetingMinutes
 {
-    public class MeetingMinuteService : CrudAppService<MeetingMinute, MeetingMinuteDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateMeetingMinuteDto, CreateUpdateMeetingMinuteDto>, IMeetingMinuteService
+    public class MeetingMinuteService : CrudAppService<MeetingMinute, 
+        MeetingMinuteDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateMeetingMinuteDto, CreateUpdateMeetingMinuteDto>, IMeetingMinuteService
     {
         private readonly IEmailService _emailService;
         private readonly IRepository<MeetingMinute, Guid> _meetingMinuteRepository;
@@ -79,9 +80,11 @@ namespace Promact.CustomerSuccess.Platform.Services.MeetingMinutes
            await _emailService.SendEmailToStakeHolder(projectDetail);
         }
 
-        public async Task<List<MeetingMinute>> GetMeetingMinuteByProjectIdAsync(Guid projectId)
+        public async Task<List<MeetingMinuteDto>> GetMeetingMinuteByProjectIdAsync(Guid projectId)
         {
-            return await _meetingMinuteRepository.GetListAsync(ah => ah.ProjectId == projectId);
+            var meetingMinute = await _meetingMinuteRepository.GetListAsync(ah => ah.ProjectId == projectId);
+
+            return ObjectMapper.Map<List<MeetingMinute>, List<MeetingMinuteDto>>(meetingMinute);
         }
 
     }

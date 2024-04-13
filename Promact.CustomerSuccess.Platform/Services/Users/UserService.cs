@@ -1,6 +1,5 @@
 ﻿
 using AutoMapper;
-using AutoMapper.Internal.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Promact.CustomerSuccess.Platform.Constants;
@@ -14,7 +13,7 @@ using Volo.Abp.Identity;
 namespace Promact.CustomerSuccess.Platform.Services.Users
 {
 
-    public class UserService : IUserService, IScopedDependency
+    public class UserService : IUserService,ITransientDependency
     {
 
         private readonly IdentityUserManager _userManager;

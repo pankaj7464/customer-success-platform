@@ -218,32 +218,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
         <meta charset=""UTF-8"">
         <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
         <title>Client Feedback</title>
-        <style>
-            /* CSS styles can be added here to style the email content */
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-            }}
-
-            .container {{
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-            }}
-
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-            }}
-
-            th, td {{
-                padding: 8px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }}
-        </style>
+        {css}
     </head>
     <body>
         <div class=""container"">
@@ -279,32 +254,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
         <meta charset=""UTF-8"">
         <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
         <title>Project Budget</title>
-        <style>
-            /* CSS styles can be added here to style the email content */
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-            }}
-
-            .container {{
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-            }}
-
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-            }}
-
-            th, td {{
-                padding: 8px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }}
-        </style>
+       {css}
     </head>
     <body>
         <div class=""container"">
@@ -548,9 +498,6 @@ namespace Promact.CustomerSuccess.Platform.Services.Emailing
             return body;
         }
 
-        internal static string GetEmailTemplate(string name)
-        {
-            throw new NotImplementedException();
-        }
+     
     }
 }

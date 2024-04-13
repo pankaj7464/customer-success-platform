@@ -7,14 +7,12 @@ using Promact.CustomerSuccess.Platform.Services.Dtos.ApprovedTeam;
 using Microsoft.AspNetCore.Authorization;
 using Promact.CustomerSuccess.Platform.Constants;
 using Microsoft.EntityFrameworkCore;
-using Volo.Abp.ObjectMapping;
-using System.Collections.Generic;
-using System.Linq;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
+
 namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
 {
     [Authorize]
-    public class ApprovedTeamService : CrudAppService<ApprovedTeam, ApprovedTeamDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateApprovedTeamDto, CreateUpdateApprovedTeamDto>
+    public class ApprovedTeamService : CrudAppService<ApprovedTeam, ApprovedTeamDto, Guid, PagedAndSortedResultRequestDto, 
+        CreateUpdateApprovedTeamDto, CreateUpdateApprovedTeamDto>,IApprovedTeamService
     {
         private readonly IEmailService _emailService;
         private readonly IRepository<ApprovedTeam, Guid> _approvedTeamRepository;
@@ -87,23 +85,8 @@ namespace Promact.CustomerSuccess.Platform.Services.ApprovedTeams
             var approvedTeams = await queryable
                 .Where(t => t.ProjectId == projectId)
                 .Include(t => t.Role)
-                .Select(t => new ApprovedTeamDto
-                {
-                    Id = t.Id,
-                    NoOfResources = t.NoOfResources,
-                    PhaseNo = t.PhaseNo,
-                    Role = new RoleDto
-                    {
-                        Id = t.Role.Id,
-                        Name = t.Role.Name
-                    },
-                    Duration = t.Duration,
-                    Availability = t.Availability,
-                    ProjectId = t.ProjectId
-                })
                 .ToListAsync();
-
-            return approvedTeams;
+            return ObjectMapper.Map<List<ApprovedTeam>,List<ApprovedTeamDto>>(approvedTeams);
         }
 
 

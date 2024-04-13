@@ -100,22 +100,9 @@ namespace Promact.CustomerSuccess.Platform.Services.AuditHistories
             var auditHistories = await queryable
                 .Where(a => a.ProjectId == projectId)
                 .Include(a => a.Reviewer)
-                .Select(a => new AuditHistoryDto
-                {
-                    Id = a.Id,
-                    DateOfAudit = a.DateOfAudit,
-                    Status = a.Status,
-                    ReviewedSection = a.ReviewedSection,
-                    CommentOrQueries = a.CommentOrQueries,
-                    ActionItem = a.ActionItem,
-                    Reviewer = new UserDto
-                    {
-                        Name = a.Reviewer.Name,
-                        Id = a.Reviewer.Id,
-                    }
-                }).ToListAsync();
+                .ToListAsync();
 
-            return auditHistories;
+            return ObjectMapper.Map<List<AuditHistory>,List<AuditHistoryDto>>(auditHistories);
         }
 
 

@@ -57,6 +57,10 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
+using Promact.CustomerSuccess.Platform.Entities;
+using Promact.CustomerSuccess.Platform.Services.Idenetity;
+using Microsoft.AspNetCore.Identity;
+using IdentityRole = Microsoft.AspNetCore.Identity.IdentityRole;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -120,6 +124,14 @@ public class PlatformModule : AbpModule
         context.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
         context.Services.AddScoped<IEmailService, EmailService>();
         context.Services.AddHttpClient();
+        context.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+       .AddEntityFrameworkStores<PlatformDbContext>()
+       .AddDefaultTokenProviders();
+
+
+        context.Services.AddScoped<IApplicationUserManager,ApplicationUserManager>();
+        context.Services.AddScoped<IApplicationRoleManager,ApplicationRoleManager>();         
+
         context.Services.PreConfigure<AbpMvcDataAnnotationsLocalizationOptions>(options =>
         {
             options.AddAssemblyResource(

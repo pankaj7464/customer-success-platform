@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Promact.CustomerSuccess.Platform.Entities;
+using System.Reflection.Emit;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
@@ -38,6 +40,8 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
     public DbSet<MeetingMinute> MeetingMinutes { get; set; }
     public DbSet<EscalationMatrix> EscalationMatrices { get; set; }
     public DbSet<Sprint> Sprints { get; set; }
+    public DbSet<ApplicationUser> Users { get; set; }
+    public DbSet<ApplicationRole> Roles { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -114,8 +118,16 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
             ClientFeedback.ConfigureByConvention();
         });
 
+        builder.Entity<ApplicationUser>(user =>
+        {
+            user.ConfigureByConvention();
+        });
+         builder.Entity<ApplicationRole>(role =>
+        {
+            role.ConfigureByConvention();
+        });
 
-
+   
 
 
     }

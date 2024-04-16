@@ -1,13 +1,11 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Project;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Stakeholder;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
-using System.Linq;
 using System.Security.Claims;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -74,7 +72,7 @@ namespace Promact.CustomerSuccess.Platform.Services
         {
             var user = _contextAccessor.HttpContext.User;
             var currentUserId = Guid.NewGuid(); // Assuming default value if user ID is not available
-            var projects = new List<ProjectDto>();
+            var projects = new List<Project>();
 
             if (user.Identity.IsAuthenticated)
             {
@@ -109,13 +107,17 @@ namespace Promact.CustomerSuccess.Platform.Services
                     {
                         // Return all data for admin or auditor
                         var allProjects = await _projectRepository.GetListAsync();
-                        projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(allProjects));
+                        projects.AddRange(allProjects);
                     }
                     else if (roles.Contains("manager"))
                     {
                         // Return manager data
-                        var managerProjects = await _projectRepository.GetListAsync(p => p.ManagerId == currentUserId);
-                        projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(managerProjects));
+                      
+                        var queryable = await _projectRepository.GetQueryableAsync();
+                        var managerProjects = queryable
+                            .Where(p => p.ManagerId == currentUserId)
+                            .Include(p => p.Manager);
+                        projects.AddRange(managerProjects);
                     }
                     else if (roles.Contains("client"))
                     {
@@ -131,7 +133,8 @@ namespace Promact.CustomerSuccess.Platform.Services
                             var sDto = stakeholderDto.Where(s => s.User.Email == email);
 
                             var projectIds = sDto.Select(s => s.ProjectId).ToList();
-                            var clientProjects = await _projectRepository.GetListAsync(p => projectIds.Contains(p.Id));
+                            var queryable = await _projectRepository.GetQueryableAsync();
+
                             projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(clientProjects));
                         }
                     }

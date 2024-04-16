@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
-using Volo.Abp.Data;
+﻿
+using Volo.Abp.Identity;
+
 namespace Promact.CustomerSuccess.Platform.Entities
 {
-
-    public class ApplicationUser : IdentityUser<Guid> { 
+    public class ApplicationUser : IdentityUser
+    { 
         public required string Name { get; set; }
 
         public required string UserName { get; set; }
@@ -23,11 +23,10 @@ namespace Promact.CustomerSuccess.Platform.Entities
 
         public Guid? TenantId { get; set; }
 
-
-
-        [NotMapped]
-        public ExtraPropertyDictionary? ExtraProperties { get; set; }
-
-     
+        public ApplicationUser(string name, string userName, string email) :
+        base(Guid.NewGuid(), userName, email)
+        {
+            Name = name;
+        }
     }
 }

@@ -1,13 +1,9 @@
 ﻿
-using Microsoft.IdentityModel.Tokens;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
+using Auth0.ManagementApi.Models;
+using Newtonsoft.Json;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using System.Net.Http.Headers;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Security.Claims;
-using Volo.Abp.Users;
 
 
 namespace Promact.CustomerSuccess.Platform.Services.Auth0
@@ -16,70 +12,40 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
     {
         private readonly IConfiguration _configuration;
         private readonly IUttilService _uttilService;
+        private readonly HttpClient _httpClient;
         public Auth0Service(IConfiguration configuration, HttpClient httpClient,
-        ICurrentUser currentUser, IUttilService uttilService)
+        IUttilService uttilService)
         {
             _uttilService = uttilService;
             _configuration = configuration;
+            _httpClient = httpClient;
         }
-
-        public async Task<TokenResponse> ExchangeToken(string token)
+        public async Task<User> GetUserDetailFromAuth0(string token)
         {
-            // Decode the JWT token
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var jwtToken = tokenHandler.ReadJwtToken(token);
-
-            // Extract user details and roles
-            var email = jwtToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-            if (email != null)
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            try
             {
-                var user = await _uttilService.GetUserByEmailAsync(email);
-                if (user != null)
+                HttpResponseMessage response = await _httpClient.GetAsync(_configuration["Auth0:Domain"] + "/userinfo");
+
+                if (response.IsSuccessStatusCode)
                 {
-                    var jwt_token = GenerateJwtToken(user);
-                    return new TokenResponse { token = jwt_token, Data = user };
+                    string jsonResult = await response.Content.ReadAsStringAsync();
+                    User user = JsonConvert.DeserializeObject<User>(jsonResult);
+                    return user; // Return the user detail as a successful response
                 }
-                else new TokenResponse { Message = "You are not registered user", };
+                else
+                {
+                    // Handle unsuccessful response
+                    return null;
+                }
             }
-
-            return new TokenResponse { Message = "Not valid token", };
-
-        }
-
-        private string GenerateJwtToken(UserWithRolesDto user)
-        {
-            var securityKey = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var claims = new List<Claim>
-             {
-                 new Claim(ClaimTypes.NameIdentifier, user.UserId),
-                 new Claim(ClaimTypes.Name, user.UserName),
-                 new Claim(ClaimTypes.Email, user.Email)
-             };
-
-
-            foreach (var role in user.Roles)
+            catch (Exception ex)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                // Log the exception for debugging purposes
+                // Return a generic error message to the client
+                return null;
             }
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(securityKey), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-
         }
+    }
 
-    }
-    public class TokenResponse
-    {
-        public string token { get; set; }
-        public string Message { get; set; }
-        public object Data { get; internal set; }
-    }
 }

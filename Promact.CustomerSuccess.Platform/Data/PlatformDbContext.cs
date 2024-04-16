@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Promact.CustomerSuccess.Platform.Entities;
 using System.Reflection.Emit;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -22,18 +23,15 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
     {
     }
 
-    public DbSet<ProjectResources> Resources { get; set; } /*Added*/
-    public DbSet<ProjectUpdate> ProjectUpdate { get; set; } /*added*/
-    public DbSet<ApprovedTeam> ApprovedTeams { get; set; } /*added*/
-
+    public DbSet<ProjectResources> Resources { get; set; } 
+    public DbSet<ProjectUpdate> ProjectUpdate { get; set; }
+    public DbSet<ApprovedTeam> ApprovedTeams { get; set; }
     public DbSet<Stakeholder> Stakeholders { get; set; }
     public DbSet<VersionHistory> VersionHistories { get; set; }
     public DbSet<AuditHistory> AuditHistories { get; set; }
     public DbSet<Project> Projects { get; set; }
-
     public DbSet<ClientFeedback> ClientFeedbacks { get; set; }
     public DbSet<ProjectBudget> ProjectBudgets { get; set; }
-
     public DbSet<PhaseMilestone> PhaseMilestones { get; set; }
     public DbSet<ProjectResources> ProjectResources { get; set; }
     public DbSet<RiskProfile> RiskProfiles { get; set; }
@@ -82,17 +80,6 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
         {
             MeetingMinute.ConfigureByConvention();
         });
-
-        builder.Entity<Project>(b =>
-        {
-            b.HasOne<IdentityUser>()
-                .WithMany()
-                .HasForeignKey(p => p.ManagerId)
-                .IsRequired();
-
-            b.ConfigureByConvention();
-        });
-
         builder.Entity<ProjectBudget>(ProjectBudget =>
         {
             ProjectBudget.ConfigureByConvention();

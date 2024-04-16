@@ -1,18 +1,20 @@
-﻿
+﻿using Auth0.ManagementApi.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Promact.CustomerSuccess.Platform.Constants;
+using Promact.CustomerSuccess.Platform.Services.Auth0;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth.Auth;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
+using Promact.CustomerSuccess.Platform.Services.Uttils;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 
+
 namespace Promact.CustomerSuccess.Platform.Services.Users
 {
-
     public class UserService : IUserService,ITransientDependency
     {
 
@@ -21,6 +23,8 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
         private readonly IConfiguration _configuration;
         private readonly IIdentityUserRepository _userRepository;
         private readonly IIdentityRoleRepository _roleRepository;
+        private readonly IAuth0Service _auth0Service;
+        private readonly IUttilService _uttilService;
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
         private readonly string password;
@@ -29,20 +33,70 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
             IdentityUserManager userManager,
             IdentityRoleManager roleManager,
             IConfiguration configuration,
-            IIdentityUserRepository userRepository,
-            IIdentityRoleRepository roleRepository,
             IEmailService emailService,
+            IUttilService uttilService,
+            IAuth0Service auth0Service,
             IMapper mapper)
         {
-            _userRepository = userRepository;
-            _roleRepository = roleRepository;
             _roleManager = roleManager;
             _userManager = userManager;
             _configuration = configuration;
+            _auth0Service = auth0Service;
+            _uttilService = uttilService;
             _emailService = emailService;
             _mapper = mapper;
             password = _configuration["DefaultUserPassword"];
+        }
 
+        public async Task<LoginResponse> LoginWithAuth0Token(string token)
+        {
+            // Retrieve user details from Auth0
+            User user = await _auth0Service.GetUserDetailFromAuth0(token);
+            if (user == null)
+            {
+                // If user details are not retrieved, return an error response
+                return new LoginResponse
+                {
+                    Message = "User details not found in Auth0.",
+                    Success = false
+                };
+            }
+
+            // Find the user in your system by email
+            var userDetail = await _userManager.FindByEmailAsync(user.Email);
+            if (userDetail == null)
+            {
+                // If the user does not exist in your system, return an error response
+                return new LoginResponse
+                {
+                    Message = "User not found in the system.",
+                    Success = false
+                };
+            }
+
+            // Retrieve roles for the user
+            var roles = await _userManager.GetRolesAsync(userDetail);
+
+            // Create a DTO with user details and roles
+            var userWithRole = new UserWithRolesDto
+            {
+                UserId = userDetail.Id,
+                UserName = userDetail.UserName,
+                Email = userDetail.Email,
+                Roles = roles.ToList() 
+            };
+
+            // Generate a JWT token for the user
+            var jwtToken = await _uttilService.GenerateJwtToken(userWithRole);
+
+            // Return a successful login response
+            return new LoginResponse
+            {
+                Message = "Login Success",
+                User = userWithRole, // Assuming you want to return the user with roles
+                token = jwtToken,
+                Success = true
+            };
         }
 
         [Authorize(Policy = PolicyName.UserCreatePolicy)]
@@ -268,7 +322,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
         }
 
         [Authorize(Policy = PolicyName.AssignRolePolicy)]
-        public async Task<Response> AssignRole(UserRoleDto model)
+        public async Task<Response> UpdateRolesAsync(UserRoleDto model)
         {
             var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
@@ -276,33 +330,36 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
                 return new Response { message = "User not found." };
             }
 
-            var roleExists = await _roleManager.FindByIdAsync(model.RoleId);
-            if (roleExists == null)
+            // Get the user's current roles
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            // Remove the user from all current roles
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, userRoles);
+            if (!removeResult.Succeeded)
             {
-                return new Response { message = "Role does not exist." };
+                return new Response { message = "Failed to remove user from existing roles." };
             }
 
-            // Check if the user is already in the role
-            var isInRole = await _userManager.IsInRoleAsync(user, roleExists.Name);
-
-            if (isInRole)
+            // Iterate over the list of role IDs and add the user to each role
+            foreach (var roleId in model.RoleIds)
             {
-                // If the user is already in the role, remove them first
-                var removeResult = await _userManager.RemoveFromRoleAsync(user, roleExists.Name);
-                if (!removeResult.Succeeded)
+                var roleExists = await _roleManager.FindByIdAsync(roleId);
+                if (roleExists == null)
                 {
-                    return new Response { message = "Failed to remove existing role." };
+                    // If the role doesn't exist, skip to the next role
+                    continue;
+                }
+
+                // Add the user to the role
+                var addResult = await _userManager.AddToRoleAsync(user, roleExists.Name);
+                if (!addResult.Succeeded)
+                {
+                    // If adding the user to the role fails, return an error response
+                    return new Response { message = $"Failed to assign role: {roleExists.Name}" };
                 }
             }
-
-            // Add the user to the role
-            var addResult = await _userManager.AddToRoleAsync(user, roleExists.Name);
-            if (!addResult.Succeeded)
-            {
-                return new Response { message = "Failed to assign role." };
-            }
-
-            return new Response { message = "Role assigned successfully." };
+            // Return success response if all roles were assigned successfully
+            return new Response { message = "Roles updated successfully." };
         }
 
         [Authorize(Policy = PolicyName.RoleDeletePolicy)]
@@ -325,16 +382,19 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
             }
             return new Response { message = "Deleted successfully." };
         }
-
-
-
-
+    }
+   public class LoginResponse
+    {
+        public string token { get; set; }
+        public object User { get; set; }
+        public string Message { get; set; }
+        public bool Success { get; set; }
     }
 
     public class UserRoleDto
     {
         public string UserId { get; set; }
-        public string RoleId { get; set; }
+        public IEnumerable<string> RoleIds { get; set; }
     }
 
     public class Response

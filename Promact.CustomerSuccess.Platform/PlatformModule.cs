@@ -58,9 +58,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
 using Promact.CustomerSuccess.Platform.Entities;
-using Promact.CustomerSuccess.Platform.Services.Idenetity;
 using Microsoft.AspNetCore.Identity;
-using IdentityRole = Microsoft.AspNetCore.Identity.IdentityRole;
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -124,13 +122,7 @@ public class PlatformModule : AbpModule
         context.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
         context.Services.AddScoped<IEmailService, EmailService>();
         context.Services.AddHttpClient();
-        context.Services.AddIdentity<ApplicationUser, ApplicationRole>()
-       .AddEntityFrameworkStores<PlatformDbContext>()
-       .AddDefaultTokenProviders();
-
-
-        context.Services.AddScoped<IApplicationUserManager,ApplicationUserManager>();
-        context.Services.AddScoped<IApplicationRoleManager,ApplicationRoleManager>();         
+        context.Services.AddTransient<UserManager<ApplicationUser>>();
 
         context.Services.PreConfigure<AbpMvcDataAnnotationsLocalizationOptions>(options =>
         {
@@ -210,6 +202,8 @@ public class PlatformModule : AbpModule
                  ValidateAudience = false
              };
          });
+
+
 
         ConfigureAuthorization(context);
         ConfigureBundles();
@@ -331,9 +325,9 @@ public class PlatformModule : AbpModule
 
 
             options.AddPolicy(PolicyName.VersionHistoryCreatePolicy, policy =>
-        {
-            policy.RequireRole("admin", "manager");
-        });
+            {
+                policy.RequireRole("admin", "manager");
+            });
 
             options.AddPolicy(PolicyName.VersionHistoryUpdatePolicy, policy =>
             {
@@ -758,6 +752,7 @@ public class PlatformModule : AbpModule
         }
 
         app.UseAbpRequestLocalization();
+
 
         if (!env.IsDevelopment())
         {

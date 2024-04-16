@@ -17,8 +17,8 @@ namespace Promact.CustomerSuccess.Platform.Entities
 
         [ForeignKey(nameof(User))]
         public Guid UserId { get; set; }
-        public virtual IdentityRole Role { get; set; }
-        public virtual IdentityUser User { get; set; }
+        public virtual IdentityRole? Role { get; set; }
+        public virtual IdentityUser? User { get; set; }
         public virtual Project? Project { get; set; }
     }
 }

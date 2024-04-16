@@ -51,9 +51,9 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
         Task<Response> GetUsersByRoleAsync(string roleName);
 
         /// <summary>
-        /// Assigns a role to a user.
+        /// Update roles of a user.
         /// </summary>
-        Task<Response> AssignRole(UserRoleDto model);
+        Task<Response> UpdateRolesAsync(UserRoleDto model);
 
         /// <summary>
         /// Deletes the role with the specified ID.

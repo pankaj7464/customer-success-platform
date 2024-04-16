@@ -19,7 +19,7 @@ namespace Promact.CustomerSuccess.Platform.Entities
         [ForeignKey(nameof(Project))]
         public required Guid ProjectId { get; set; }
 
-        public virtual IdentityRole? Role { get; set; }
+        public virtual ApplicationRole? Role { get; set; }
         public virtual Project? Project { get; set; }
 
     }

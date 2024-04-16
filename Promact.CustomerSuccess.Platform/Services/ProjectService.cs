@@ -133,9 +133,9 @@ namespace Promact.CustomerSuccess.Platform.Services
                             var sDto = stakeholderDto.Where(s => s.User.Email == email);
 
                             var projectIds = sDto.Select(s => s.ProjectId).ToList();
-                            var queryable = await _projectRepository.GetQueryableAsync();
-
-                            projects.AddRange(ObjectMapper.Map<List<Project>, List<ProjectDto>>(clientProjects));
+                            var projectQueryable = await _projectRepository.GetQueryableAsync();
+                            var clientProjects = projectQueryable.Where(p => projectIds.Contains(p.Id)).Include(p => p.Manager);
+                            projects.AddRange(clientProjects);
                         }
                     }
                 }
@@ -145,7 +145,7 @@ namespace Promact.CustomerSuccess.Platform.Services
             return new PagedResultDto<ProjectDto>
             {
                 TotalCount = projects.Count,
-                Items = projects
+                Items = ObjectMapper.Map<List<Project>,List<ProjectDto>>(projects)
             };
         }
 

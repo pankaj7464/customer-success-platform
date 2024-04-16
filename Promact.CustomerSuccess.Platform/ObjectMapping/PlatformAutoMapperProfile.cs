@@ -29,7 +29,8 @@ public class PlatformAutoMapperProfile : Profile
         /* Create your AutoMapper object mappings here */
         CreateMap<CreateProjectDto, Project>();
         CreateMap<UpdateProjectDto, Project>();
-        CreateMap<Project, ProjectDto>().ReverseMap();
+        CreateMap<Project, ProjectDto>().ReverseMap()
+        .ForMember(dest => dest.Manager, opt => opt.MapFrom(src => src.Manager));
 
 
         //Done
@@ -120,6 +121,9 @@ public class PlatformAutoMapperProfile : Profile
 
         CreateMap<IdentityUser, UserDto>().ReverseMap();
         CreateMap<IdentityRole, RoleDto>().ReverseMap();
+
+        CreateMap<ApplicationUser, UserDto>().ReverseMap();
+        CreateMap<ApplicationRole, RoleDto>().ReverseMap();
 
 
 

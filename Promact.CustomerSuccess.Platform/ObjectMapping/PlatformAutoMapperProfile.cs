@@ -128,14 +128,6 @@ public class PlatformAutoMapperProfile : Profile
 
 
 
-
-
-
-
-
-
-
-
         /* Document */
         CreateMap<CreateDocumentDto, Document>();
         CreateMap<UpdateDocumentDto, Document>();

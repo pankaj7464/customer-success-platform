@@ -28,10 +28,11 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
         private readonly string password;
-
         public UserService(
             IdentityUserManager userManager,
             IdentityRoleManager roleManager,
+            IIdentityUserRepository userRepository,
+            IIdentityRoleRepository roleRepository,
             IConfiguration configuration,
             IEmailService emailService,
             IUttilService uttilService,
@@ -40,6 +41,8 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _roleRepository = roleRepository;
+            _userRepository = userRepository;
             _configuration = configuration;
             _auth0Service = auth0Service;
             _uttilService = uttilService;

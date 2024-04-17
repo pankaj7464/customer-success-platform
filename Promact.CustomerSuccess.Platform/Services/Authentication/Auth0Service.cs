@@ -41,8 +41,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Auth0
             }
             catch (Exception ex)
             {
-                // Log the exception for debugging purposes
-                // Return a generic error message to the client
+              
                 return null;
             }
         }

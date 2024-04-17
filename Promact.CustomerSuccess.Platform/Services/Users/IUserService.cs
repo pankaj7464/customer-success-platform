@@ -43,7 +43,7 @@ namespace Promact.CustomerSuccess.Platform.Services.Users
         /// <summary>
         /// Creates a new role with the specified name.
         /// </summary>
-        ValueTask<Response> CreateRoleAsync(string roleName);
+        ValueTask<Response> CreateRoleAsync(string  roleName);
 
         /// <summary>
         /// Retrieves all users in the specified role.

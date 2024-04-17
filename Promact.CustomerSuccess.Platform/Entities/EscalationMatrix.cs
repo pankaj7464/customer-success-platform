@@ -17,6 +17,6 @@ namespace Promact.CustomerSuccess.Platform.Entities
         [ForeignKey((nameof(ResponsiblePerson)))]
         public Guid ResponsiblePersonId { get; set; }
         public virtual Project? Project { get; set; }        
-        public virtual ApplicationUser? ResponsiblePerson { get; set; }  
+        public virtual IdentityUser? ResponsiblePerson { get; set; }  
     }
 }

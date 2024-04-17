@@ -14,7 +14,7 @@ using Volo.Abp.Identity;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.Users;
 
-namespace Promact.CustomerSuccess.Platform.Services
+namespace Promact.CustomerSuccess.Platform.Services.Projects
 {
 
     [Authorize]
@@ -112,7 +112,7 @@ namespace Promact.CustomerSuccess.Platform.Services
                     else if (roles.Contains("manager"))
                     {
                         // Return manager data
-                      
+
                         var queryable = await _projectRepository.GetQueryableAsync();
                         var managerProjects = queryable
                             .Where(p => p.ManagerId == currentUserId)
@@ -145,7 +145,7 @@ namespace Promact.CustomerSuccess.Platform.Services
             return new PagedResultDto<ProjectDto>
             {
                 TotalCount = projects.Count,
-                Items = ObjectMapper.Map<List<Project>,List<ProjectDto>>(projects)
+                Items = ObjectMapper.Map<List<Project>, List<ProjectDto>>(projects)
             };
         }
 

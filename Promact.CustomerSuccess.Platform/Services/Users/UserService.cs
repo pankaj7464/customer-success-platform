@@ -7,6 +7,7 @@ using Promact.CustomerSuccess.Platform.Services.Auth0;
 using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth.Auth;
+using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
 using Volo.Abp.DependencyInjection;

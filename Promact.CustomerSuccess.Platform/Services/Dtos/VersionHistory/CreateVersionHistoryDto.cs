@@ -1,4 +1,5 @@
 ﻿using Promact.CustomerSuccess.Platform.Entities;
+using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory

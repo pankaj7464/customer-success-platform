@@ -1,10 +1,10 @@
 ﻿using Promact.CustomerSuccess.Platform.Entities;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
+using Promact.CustomerSuccess.Platform.Services.Dtos.Document;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
-namespace Promact.CustomerSuccess.Platform.Services
+namespace Promact.CustomerSuccess.Platform.Services.Documents
 {
     public class DocumentService : CrudAppService<Document, DocumentDto, Guid, PagedAndSortedResultRequestDto, CreateDocumentDto, UpdateDocumentDto>
     {

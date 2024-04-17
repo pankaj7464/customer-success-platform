@@ -1,7 +1,7 @@
 ﻿
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Volo.Abp.Application.Services;
+using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 
 namespace Promact.CustomerSuccess.Platform.Services.Users
 {

@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Promact.CustomerSuccess.Platform.Entities;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Services.Dtos.ApprovedTeam;
 using Promact.CustomerSuccess.Platform.Services.Dtos.AuditHistory;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Auth.Auth;
 using Promact.CustomerSuccess.Platform.Services.Dtos.ClientFeedback;
+using Promact.CustomerSuccess.Platform.Services.Dtos.Document;
 using Promact.CustomerSuccess.Platform.Services.Dtos.EscalationMatrix;
 using Promact.CustomerSuccess.Platform.Services.Dtos.MeetingMinute;
 using Promact.CustomerSuccess.Platform.Services.Dtos.PhaseMilestone;
@@ -16,9 +16,10 @@ using Promact.CustomerSuccess.Platform.Services.Dtos.ProjectUpdate;
 using Promact.CustomerSuccess.Platform.Services.Dtos.RiskProfile;
 using Promact.CustomerSuccess.Platform.Services.Dtos.sprint;
 using Promact.CustomerSuccess.Platform.Services.Dtos.Stakeholder;
+using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 using Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory;
 using Volo.Abp.Identity;
-using RoleDto = Promact.CustomerSuccess.Platform.Services.Dtos.RoleDto;
+using RoleDto = Promact.CustomerSuccess.Platform.Services.Dtos.User.RoleDto;
 
 namespace Promact.CustomerSuccess.Platform.ObjectMapping;
 

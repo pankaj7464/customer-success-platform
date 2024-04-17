@@ -47,7 +47,7 @@ using Volo.Abp.Security.Claims;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.Validation.Localization;
 using Volo.Abp.VirtualFileSystem;
-<<<<<<< HEAD
+
 using Promact.CustomerSuccess.Platform.Services.Emailing;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -60,10 +60,10 @@ using Promact.CustomerSuccess.Platform.Constants;
 using Promact.CustomerSuccess.Platform.Services.Uttils;
 using Promact.CustomerSuccess.Platform.Entities;
 using Microsoft.AspNetCore.Identity;
-=======
-using Volo.Abp.AspNetCore.Authentication.OpenIdConnect;
-using Autofac.Core;
->>>>>>> 35a62e36a313374652b1e47d6a37ad35f546a32a
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+
 
 namespace Promact.CustomerSuccess.Platform;
 
@@ -177,44 +177,14 @@ public class PlatformModule : AbpModule
         var hostingEnvironment = context.Services.GetHostingEnvironment();
         var configuration = context.Services.GetConfiguration();
         context.Services.AddScoped<IUttilService, UttillService>();
-
-
         if (hostingEnvironment.IsDevelopment())
         {
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
         }
 
-<<<<<<< HEAD
-        ConfigureAuthentication(context);
-
-
-        context.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-
-         .AddJwtBearer(options =>
-         {
-
-             options.RequireHttpsMetadata = false;
-             options.SaveToken = true;
-             options.TokenValidationParameters = new TokenValidationParameters
-             {
-
-                 ValidateIssuerSigningKey = true,
-                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["jwt:Key"])),
-                 ValidateIssuer = false,
-                 ValidateAudience = false
-             };
-         });
-
-
-
-        ConfigureAuthorization(context);
-=======
+    
         ConfigureAuthentication(context, configuration);
->>>>>>> 35a62e36a313374652b1e47d6a37ad35f546a32a
+        ConfigureAuthorization(context);
         ConfigureBundles();
         ConfigureMultiTenancy();
         ConfigureUrls(configuration);
@@ -228,25 +198,34 @@ public class PlatformModule : AbpModule
         ConfigureEfCore(context);
     }
 
-<<<<<<< HEAD
 
-    private void ConfigureAuthentication(ServiceConfigurationContext context)
-=======
     private void ConfigureAuthentication(ServiceConfigurationContext context, IConfiguration configuration)
->>>>>>> 35a62e36a313374652b1e47d6a37ad35f546a32a
     {
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-        context.Services.AddAuthentication()
+        context.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
             .AddJwtBearer(options =>
             {
                 options.Authority = configuration["AuthServer:Authority"];
                 options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
                 options.Audience = "KeycloakDemo";
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration["jwt:Key"])),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
             })
             .AddAbpOpenIdConnect(options =>
             {
                 options.Authority = configuration["AuthServer:Authority"];
-
                 options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
                 options.ResponseType = OpenIdConnectResponseType.Code;
                 options.UsePkce = true;
@@ -264,7 +243,6 @@ public class PlatformModule : AbpModule
                  * What I've done here will be built-in with ABP v5.3.0 (then we can delete the following code)
                  * https://github.com/abpframework/abp/pull/12085
                  */
-
                 if (AbpClaimTypes.Name != "given_name")
                 {
                     options.ClaimActions.MapJsonKey(AbpClaimTypes.Name, "given_name");
@@ -792,10 +770,6 @@ public class PlatformModule : AbpModule
 
 
     }
-
-
-
-
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();

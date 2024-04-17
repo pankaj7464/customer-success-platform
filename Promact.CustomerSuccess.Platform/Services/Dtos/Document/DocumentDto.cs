@@ -1,6 +1,8 @@
-﻿namespace Promact.CustomerSuccess.Platform.Services.Dtos
+﻿using Volo.Abp.Application.Dtos;
+
+namespace Promact.CustomerSuccess.Platform.Services.Dtos.Document
 {
-    public class CreateDocumentDto
+    public class DocumentDto : IEntityDto<Guid>
     {
         public required string Url { get; set; }
         public required string Name { get; set; }

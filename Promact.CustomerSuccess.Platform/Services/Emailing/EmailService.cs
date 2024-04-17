@@ -2,9 +2,9 @@
 using MimeKit.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
-using Promact.CustomerSuccess.Platform.Services.Dtos;
 using Promact.CustomerSuccess.Platform.Entities;
 using Volo.Abp.Domain.Repositories;
+using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 
 namespace Promact.CustomerSuccess.Platform.Services.Emailing
 {

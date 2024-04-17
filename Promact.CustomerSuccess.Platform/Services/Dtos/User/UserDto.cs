@@ -1,4 +1,4 @@
-﻿namespace Promact.CustomerSuccess.Platform.Services.Dtos
+﻿namespace Promact.CustomerSuccess.Platform.Services.Dtos.User
 {
     public class UserDto
     {

@@ -1,5 +1,6 @@
 ﻿using Promact.CustomerSuccess.Platform.Entities;
 using Promact.CustomerSuccess.Platform.Entities.Constants;
+using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Identity;
 namespace Promact.CustomerSuccess.Platform.Services.Dtos.AuditHistory

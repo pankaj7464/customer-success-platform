@@ -34,7 +34,7 @@ namespace Promact.CustomerSuccess.Platform.Services.ProjectBudgets
 
         }
 
-        public override async Task<ProjectBudgetDto> CreateAsync(CreateProjectBudgetDto input)
+        public override async Task<Dtos.ProjectBudget.ProjectBudgetDto> CreateAsync(CreateProjectBudgetDto input)
         {
             var projectBudgetDto = await base.CreateAsync(input);
 

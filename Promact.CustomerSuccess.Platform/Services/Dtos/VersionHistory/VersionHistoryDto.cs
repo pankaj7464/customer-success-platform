@@ -1,4 +1,5 @@
 ﻿
+using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 using Volo.Abp.Application.Dtos;
 
 namespace Promact.CustomerSuccess.Platform.Services.Dtos.VersionHistory

@@ -1,4 +1,4 @@
-﻿using Promact.CustomerSuccess.Platform.Services.Dtos;
+﻿using Promact.CustomerSuccess.Platform.Services.Dtos.User;
 
 namespace Promact.CustomerSuccess.Platform.Services.Emailing
 {

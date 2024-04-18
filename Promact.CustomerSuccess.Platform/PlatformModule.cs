@@ -63,6 +63,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+using Microsoft.OpenApi.Writers;
 
 
 namespace Promact.CustomerSuccess.Platform;
@@ -770,7 +771,7 @@ public class PlatformModule : AbpModule
 
 
     }
-    public override void OnApplicationInitialization(ApplicationInitializationContext context)
+    public override async void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var app = context.GetApplicationBuilder();
         var env = context.GetEnvironment();
@@ -784,24 +785,7 @@ public class PlatformModule : AbpModule
         app.UseAbpRequestLocalization();
 
 
-        if (!env.IsDevelopment())
-        {
-            app.UseErrorPage();
-            try
-            {
-                using (var scope = app.ApplicationServices.CreateScope())
-                {
-                    var db = scope.ServiceProvider.GetRequiredService<PlatformDbContext>();
-                    db.Database.Migrate();
-                    Log.Information("Mirgated Successfully");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.ToString());
-            }
-
-        }
+        
 
         app.UseCorrelationId();
         app.UseStaticFiles();
@@ -833,5 +817,6 @@ public class PlatformModule : AbpModule
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
         app.UseConfiguredEndpoints();
+       
     }
 }

@@ -6,9 +6,8 @@ namespace Promact.CustomerSuccess.Platform.Data;
 public class PlatformEFCoreDbSchemaMigrator : ITransientDependency
 {
     private readonly IServiceProvider _serviceProvider;
-
     public PlatformEFCoreDbSchemaMigrator(
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider )
     {
         _serviceProvider = serviceProvider;
     }

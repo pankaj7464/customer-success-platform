@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging.Abstractions;
+using Promact.CustomerSuccess.Platform.Constants;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
@@ -16,17 +17,20 @@ public class PlatformDbMigrationService : ITransientDependency
     private readonly PlatformEFCoreDbSchemaMigrator _dbSchemaMigrator;
     private readonly ITenantRepository _tenantRepository;
     private readonly ICurrentTenant _currentTenant;
+    private readonly IConfiguration _configuration;
 
     public PlatformDbMigrationService(
         IDataSeeder dataSeeder,
         PlatformEFCoreDbSchemaMigrator dbSchemaMigrator,
         ITenantRepository tenantRepository,
+        IConfiguration configuration,
         ICurrentTenant currentTenant)
     {
         _dataSeeder = dataSeeder;
         _dbSchemaMigrator = dbSchemaMigrator;
         _tenantRepository = tenantRepository;
         _currentTenant = currentTenant;
+        _configuration = configuration;
 
         Logger = NullLogger<PlatformDbMigrationService>.Instance;
     }
@@ -86,12 +90,16 @@ public class PlatformDbMigrationService : ITransientDependency
 
     private async Task SeedDataAsync(Tenant? tenant = null)
     {
+        var adminEmail = _configuration["AdminCredentials:Email"];
+        var adminPassword = _configuration["AdminCredentials:Password"];
         Logger.LogInformation($"Executing {(tenant == null ? "host" : tenant.Name + " tenant")} database seed...");
-
         await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
-            .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName, IdentityDataSeedContributor.AdminEmailDefaultValue)
-            .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName, IdentityDataSeedContributor.AdminPasswordDefaultValue)
-        );
+            .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,adminEmail)
+            .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName,adminPassword)
+            
+            );
+
+        Logger.LogInformation($"dATASEEDED............................................");
     }
 
     private bool AddInitialMigrationIfNotExist()
@@ -153,6 +161,7 @@ public class PlatformDbMigrationService : ITransientDependency
         }
         else
         {
+
             argumentPrefix = "/C";
             fileName = "cmd.exe";
         }

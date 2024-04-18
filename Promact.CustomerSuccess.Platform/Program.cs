@@ -1,6 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using Polly;
 using Promact.CustomerSuccess.Platform.Data;
 using Serilog;
 using Serilog.Events;
+using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.Data;
 
 namespace Promact.CustomerSuccess.Platform;
@@ -55,6 +58,33 @@ public class Program
             {
                 await app.Services.GetRequiredService<PlatformDbMigrationService>().MigrateAsync();
                 return 0;
+            }
+
+            var env = builder.Services.GetHostingEnvironment();
+            
+            if (!env.IsDevelopment())
+            {
+                app.UseErrorPage();
+                try
+                {
+                    using (var scope = app.Services.CreateScope())
+                    {
+                        var db = scope.ServiceProvider.GetRequiredService<PlatformDbContext>();
+                        db.Database.Migrate();
+                        var openIddit = scope.ServiceProvider.GetRequiredService<OpenIddictDataSeedContributor>();
+                        await openIddit.SeedAsync(new Volo.Abp.Data.DataSeedContext());
+                        var seed = scope.ServiceProvider.GetRequiredService<PlatformDbMigrationService>();
+                        await seed.MigrateAsync();
+                        Log.Information("Mirgated Successfully");
+                        scope.Dispose();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.ToString());
+                }
+
             }
 
             Log.Information("Starting Promact.CustomerSuccess.Platform.");

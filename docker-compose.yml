@@ -43,7 +43,7 @@ services:
       Auth0__Domain: ${AUTH0__DOMAIN}
       AdminCredentials__Email: ${ADMINCREDENTIALS__PASSWORD}
       AdminCredentials__Password: ${ADMINCREDENTIALS__PASSWORD}
-      DefaultUserPassword: ${DEFAULTUSERPASSWORD}
+
     ports:
       - 8080:8080
     depends_on:

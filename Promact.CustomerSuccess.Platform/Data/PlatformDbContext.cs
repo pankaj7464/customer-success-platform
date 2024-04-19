@@ -38,8 +38,7 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
     public DbSet<MeetingMinute> MeetingMinutes { get; set; }
     public DbSet<EscalationMatrix> EscalationMatrices { get; set; }
     public DbSet<Sprint> Sprints { get; set; }
-    public DbSet<ApplicationUser> Users { get; set; }
-    public DbSet<ApplicationRole> Roles { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -69,6 +68,9 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
         });
         builder.Entity<AuditHistory>(auditHistory =>
         {
+            auditHistory.HasOne(a => a.Reviewer)
+                .WithMany()
+                .HasForeignKey(a => a.ReviewerId);
             auditHistory.ConfigureByConvention();
         });
 
@@ -105,14 +107,6 @@ public class PlatformDbContext : AbpDbContext<PlatformDbContext>
             ClientFeedback.ConfigureByConvention();
         });
 
-        builder.Entity<ApplicationUser>(user =>
-        {
-            user.ConfigureByConvention();
-        });
-         builder.Entity<ApplicationRole>(role =>
-        {
-            role.ConfigureByConvention();
-        });
 
    
 

@@ -128,7 +128,6 @@ public class PlatformModule : AbpModule
         context.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
         context.Services.AddScoped<IEmailService, EmailService>();
         context.Services.AddHttpClient();
-        context.Services.AddTransient<UserManager<ApplicationUser>>();
 
         context.Services.PreConfigure<AbpMvcDataAnnotationsLocalizationOptions>(options =>
         {

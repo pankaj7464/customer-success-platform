@@ -56,7 +56,8 @@ public class PlatformAutoMapperProfile : Profile
         //Done
         CreateMap<CreateAuditHistoryDto, AuditHistory>();
         CreateMap<UpdateAuditHistoryDto, AuditHistory>();
-        CreateMap<AuditHistory, AuditHistoryDto>().ReverseMap();
+        CreateMap<AuditHistory, AuditHistoryDto>().ReverseMap()
+       .ForMember(dest => dest.Reviewer, opt => opt.MapFrom(src => src.Reviewer));
 
 
         //Done
@@ -123,9 +124,6 @@ public class PlatformAutoMapperProfile : Profile
 
         CreateMap<IdentityUser, UserDto>().ReverseMap();
         CreateMap<IdentityRole, RoleDto>().ReverseMap();
-
-        CreateMap<ApplicationUser, UserDto>().ReverseMap();
-        CreateMap<ApplicationRole, RoleDto>().ReverseMap();
 
 
 

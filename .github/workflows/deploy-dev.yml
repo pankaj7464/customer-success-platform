@@ -44,8 +44,8 @@ jobs:
 
       - name: "Build and push Docker image"
         run: |
-          docker compose build
-          docker compose push
+          docker compose -f docker-compose.yml build
+          docker compose -f docker-compose.yml push
 
       - name: "SCP to azure vm"
         uses: appleboy/scp-action@v0.1.7

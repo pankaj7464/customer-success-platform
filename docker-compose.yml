@@ -1,0 +1,57 @@
+services:
+  pgdb:
+    image: postgres:alpine
+    container_name: csp-pg-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - csp-dotnet-be-network
+  dotnet:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: jainilp12/csp-dotnet-be:${BACKEND_IMAGE_TAG}
+    container_name: csp-dotnet-be
+    environment:
+      ConnectionStrings__Default: "Host=pgdb;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
+      App__SelfUrl: ${APP__SELFURL}
+      App__ClientUrl: ${APP__CLIENTURL}
+      App__CorsOrigins: ${APP__CORSORIGINS}
+      AuthServer__Authority: ${AUTHSERVER__AUTHORITY}
+      AuthServer__SwaggerClientId: ${AUTHSERVER__SWAGGERCLIENTID}
+      AllowedHosts: ${ALLOWEDHOSTS}
+      EmailSettings__SmtpServer: ${EMAILSETTINGS__SMTPSERVER}
+      EmailSettings__Port: ${EMAILSETTINGS__PORT}
+      EmailSettings__Username: ${EMAILSETTINGS__USERNAME}
+      EmailSettings__Password: ${EMAILSETTINGS__PASSWORD}
+      EmailSettings__FromAddress: ${EMAILSETTINGS__FROMADDRESS}
+      MyAppCertificate__X590: ${MYAPPCERTIFICATE__X590}
+      Jwt__Key: ${JWT__KEY}
+      Jwt__Issuer: ${JWT__ISSUER}
+      Jwt__Audience: ${JWT__AUDIENCE}
+      Auth0__Domain: ${AUTH0__DOMAIN}
+      AdminCredentials__Email: ${ADMINCREDENTIALS__PASSWORD}
+      AdminCredentials__Password: ${ADMINCREDENTIALS__PASSWORD}
+      DefaultUserPassword: ${DEFAULTUSERPASSWORD}
+    ports:
+      - 8080:8080
+    depends_on:
+      pgdb:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - csp-dotnet-be-network
+networks:
+  csp-dotnet-be-network:
+    driver: bridge

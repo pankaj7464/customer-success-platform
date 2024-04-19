@@ -380,19 +380,19 @@ public class PlatformModule : AbpModule
 
             options.AddPolicy(PolicyName.AuditHistoryCreatePolicy, policy =>
         {
-            policy.RequireRole("admin", "manager");
+            policy.RequireRole("admin", "auditor");
         });
 
 
             options.AddPolicy(PolicyName.AuditHistoryUpdatePolicy, policy =>
             {
-                policy.RequireRole("admin", "manager");
+                policy.RequireRole("admin", "auditor");
             });
 
 
             options.AddPolicy(PolicyName.AuditHistoryDeletePolicy, policy =>
             {
-                policy.RequireRole("admin", "manager");
+                policy.RequireRole("admin", "auditor");
             });
 
             //Client Feedback Delete Plolicy

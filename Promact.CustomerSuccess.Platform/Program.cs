@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Polly;
 using Promact.CustomerSuccess.Platform.Data;
 using Serilog;
 using Serilog.Events;
